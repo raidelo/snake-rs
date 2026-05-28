@@ -1,9 +1,6 @@
-use std::{
-    fmt::Display,
-    io::{self, Write, stdin, stdout},
-};
+use std::io::stdin;
 
-use crate::types::{Axes, Window};
+use crate::types::{Axes, Direction, Window};
 
 pub fn random_pos(window: &Window) -> Axes {
     Axes::new(
@@ -12,18 +9,22 @@ pub fn random_pos(window: &Window) -> Axes {
     )
 }
 
-pub fn render(item: &impl Display, position: &Axes) -> Result<(), io::Error> {
-    stdout().write_all(format!("\x1b[{};{}H{}", position.y, position.x, item).as_bytes())?;
-    stdout().flush()
-}
-
-pub fn clear_screen() -> Result<(), io::Error> {
-    stdout().write_all("\x1b[2J".as_bytes())?;
-    stdout().flush()
+pub fn random_direction() -> Direction {
+    match rand::random_range(1..=4) {
+        1 => Direction::Up,
+        2 => Direction::Down,
+        3 => Direction::Left,
+        4 => Direction::Right,
+        _ => unreachable!(),
+    }
 }
 
 pub fn get_input() -> String {
     let mut s = String::new();
     let _ = stdin().read_line(&mut s);
     s
+}
+
+pub async fn sleep(millis: u64) -> () {
+    tokio::time::sleep(tokio::time::Duration::from_millis(millis)).await;
 }

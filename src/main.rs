@@ -1,39 +1,37 @@
-mod cursor;
 mod helpers;
 mod types;
 
 use crate::{
-    cursor::CursorStatus,
-    helpers::{clear_screen, get_input, random_pos, render},
-    types::Window,
+    helpers::{get_input, random_direction, random_pos, sleep},
+    types::{Square, Window},
 };
-
-const SNAKE_GLYPH: char = '\u{2588}';
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let task = tokio::spawn(run());
+    task.await??;
+
+    Ok(())
+}
+
+async fn run() -> Result<(), std::io::Error> {
     let Some((width, height)) = terminal_size::terminal_size() else {
         return Ok(());
     };
 
-    let window = Window::new(width.0, height.0);
+    let mut window = Window::new(width.0, height.0);
+    window.hide_cursor()?;
 
-    let cursor = CursorStatus::new().hide()?;
+    let pos = random_pos(&window);
+    let direction = random_direction();
+    let mut square = Square::new(pos, direction);
 
     loop {
-        let pos = random_pos(&window);
+        window.clear_screen()?;
+        window.render(&square)?;
 
-        let _ = clear_screen();
-        let _ = render(&SNAKE_GLYPH, &pos);
+        sleep(100).await;
 
-        let input = get_input();
-
-        if input.trim() == "q" {
-            cursor.show()?;
-
-            break;
-        }
+        square.update_pos();
     }
-
-    Ok(())
 }
