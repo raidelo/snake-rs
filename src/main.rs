@@ -10,7 +10,8 @@ use crate::{
 
 const SNAKE_GLYPH: char = '\u{2588}';
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Some((width, height)) = terminal_size::terminal_size() else {
         return Ok(());
     };
