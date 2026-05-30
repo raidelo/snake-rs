@@ -51,11 +51,11 @@ impl Window {
         self.height = height;
     }
 
-    pub fn render_square(&self, item: &Square) -> Result<(), io::Error> {
+    pub fn render_square(&self, square: &Square) -> Result<(), io::Error> {
         stdout().write_all(
             format!(
                 "{}{}{}{}",
-                item.position, item.color, item.glyph, item.glyph,
+                square.position, square.color, square.glyph, square.glyph,
             )
             .as_bytes(),
         )?;
@@ -79,43 +79,39 @@ impl Window {
 const SNAKE_GLYPH: char = '\u{2588}';
 
 #[derive(Debug)]
-pub struct Square {
-    pub glyph: char,
-    pub position: Axes,
+pub struct SnakePart {
     pub direction: Direction,
-    pub color: Color,
+    pub square: Square,
 }
 
-impl Square {
+impl SnakePart {
     pub fn new(position: Axes, direction: Direction, color: Color) -> Self {
         Self {
-            glyph: SNAKE_GLYPH,
-            position,
             direction,
-            color,
+            square: Square::new(position, color, SNAKE_GLYPH),
         }
     }
 
     pub fn update_position(&mut self, window: &Window) {
         match self.direction {
             Direction::Up => {
-                if self.position.y > 1 {
-                    self.position.y -= 1;
+                if self.square.position.y > 1 {
+                    self.square.position.y -= 1;
                 }
             }
             Direction::Down => {
-                if self.position.y < window.height {
-                    self.position.y += 1;
+                if self.square.position.y < window.height {
+                    self.square.position.y += 1;
                 }
             }
             Direction::Left => {
-                if self.position.x > 2 {
-                    self.position.x -= 2;
+                if self.square.position.x > 2 {
+                    self.square.position.x -= 2;
                 }
             }
             Direction::Right => {
-                if self.position.x < window.width - 2 {
-                    self.position.x += 2;
+                if self.square.position.x < window.width - 2 {
+                    self.square.position.x += 2;
                 }
             }
         }
@@ -173,12 +169,12 @@ impl Direction {
 }
 
 pub struct Snake {
-    pub parts: Vec<Square>,
+    pub parts: Vec<SnakePart>,
 }
 
 impl Snake {
     pub fn new(position: Axes, direction: Direction, initial_parts: u16) -> Self {
-        let mut parts = vec![Square::new(
+        let mut parts = vec![SnakePart::new(
             position.clone(),
             direction.clone(),
             default_snake_color(),
@@ -188,7 +184,7 @@ impl Snake {
             for i in 1..initial_parts {
                 let ndirection = direction.clone();
 
-                parts.push(Square::new(
+                parts.push(SnakePart::new(
                     match ndirection {
                         Direction::Up => Axes {
                             y: position.y.saturating_add(i),
@@ -265,4 +261,21 @@ impl Display for Color {
 
 fn default_snake_color() -> Color {
     Color::new(100, 255, 100)
+}
+
+#[derive(Debug)]
+pub struct Square {
+    pub position: Axes,
+    pub color: Color,
+    pub glyph: char,
+}
+
+impl Square {
+    pub fn new(position: Axes, color: Color, glyph: char) -> Self {
+        Self {
+            position,
+            color,
+            glyph,
+        }
+    }
 }
