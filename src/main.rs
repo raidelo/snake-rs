@@ -10,9 +10,8 @@ use crossterm::event::KeyCode;
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::types::Axes;
-use crate::types::Snake;
-use crate::types::{Direction, Window};
+use crate::helpers::make_width_pair;
+use crate::types::{Axes, Direction, Snake, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -66,13 +65,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
-    let (width, height) = crossterm::terminal::size()?;
+    let (mut width, height) = crossterm::terminal::size()?;
+    width = make_width_pair(width);
 
     let mut window = Window::new(width, height);
     window.hide_cursor()?;
 
     let mut snake = Snake::new(
-        Axes::new(width / 4, height / 2),
+        Axes::new(
+            {
+                let p = width / 4;
+                if !p.is_multiple_of(2) { p } else { p - 1 }
+            },
+            height / 2,
+        ),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
     );
@@ -114,7 +120,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
                     };
                 }
 
-                Event::Resize(width, height) => window.resize(width, height),
+                Event::Resize(width, height) => window.resize(make_width_pair(width), height),
 
                 _ => (),
             },

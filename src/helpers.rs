@@ -16,3 +16,11 @@ pub fn random_direction() -> Direction {
         _ => unreachable!(),
     }
 }
+
+pub fn make_width_pair(width: u16) -> u16 {
+    if width.is_multiple_of(2) {
+        width
+    } else {
+        width - 1
+    }
+}
