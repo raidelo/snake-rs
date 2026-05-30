@@ -48,7 +48,7 @@ impl Window {
         self.height = height;
     }
 
-    pub fn render(&self, item: &Square) -> Result<(), io::Error> {
+    pub fn render_square(&self, item: &Square) -> Result<(), io::Error> {
         stdout().write_all(
             format!(
                 "\x1b[{};{}H{}{}",
@@ -104,7 +104,7 @@ impl Square {
                 }
             }
             Direction::Left => {
-                if self.position.x > 0 {
+                if self.position.x > 1 {
                     self.position.x -= 2;
                 }
             }
@@ -142,7 +142,7 @@ impl Axes {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Direction {
     Up,
     Down,
@@ -158,5 +158,75 @@ impl Direction {
             Direction::Left => Direction::Right,
             Direction::Right => Direction::Left,
         }
+    }
+}
+
+pub struct Snake {
+    pub parts: Vec<Square>,
+}
+
+impl Snake {
+    pub fn new(position: Axes, direction: Direction, initial_parts: u16) -> Self {
+        let mut parts = vec![Square::new(position.clone(), direction.clone())];
+
+        if initial_parts != 0 {
+            for i in 1..=initial_parts {
+                let ndirection = direction.clone();
+
+                parts.push(Square::new(
+                    match ndirection {
+                        Direction::Up => Axes {
+                            y: position.y.saturating_add(i),
+                            ..position
+                        },
+                        Direction::Down => Axes {
+                            y: position.y.saturating_sub(i),
+                            ..position
+                        },
+                        Direction::Left => Axes {
+                            x: position.x.saturating_add(i * 2),
+                            ..position
+                        },
+                        Direction::Right => Axes {
+                            x: position.x.saturating_sub(i * 2),
+                            ..position
+                        },
+                    },
+                    ndirection,
+                ));
+            }
+        }
+
+        Self { parts }
+    }
+
+    pub fn update(&mut self, window: &Window) {
+        for square in self.parts.iter_mut() {
+            square.update_position(window);
+        }
+
+        if let Some((index1, index2)) = self._first_different_squares() {
+            let ndirection = self.parts.get(index1).unwrap().direction.clone();
+
+            self.parts.get_mut(index2).unwrap().direction = ndirection;
+        }
+    }
+
+    fn _first_different_squares(&self) -> Option<(usize, usize)> {
+        for (pos, square) in self.parts.iter().enumerate() {
+            if let Some(next_square) = self.parts.get(pos + 1)
+                && square.direction != next_square.direction
+            {
+                return Some((pos, pos + 1));
+            }
+        }
+        None
+    }
+
+    pub fn change_direction(&mut self, direction: Direction) -> bool {
+        self.parts
+            .get_mut(0)
+            .expect("the snake must have at least 1 square of lenght")
+            .change_direction(direction)
     }
 }

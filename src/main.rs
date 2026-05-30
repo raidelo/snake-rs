@@ -10,9 +10,10 @@ use crossterm::event::KeyCode;
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
+use crate::types::Snake;
 use crate::{
     helpers::{random_direction, random_pos},
-    types::{Direction, Square, Window},
+    types::{Direction, Window},
 };
 
 #[tokio::main]
@@ -73,7 +74,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     window.hide_cursor()?;
 
     let direction = random_direction();
-    let mut square = Square::new(random_pos(&window), direction);
+    let mut snake = Snake::new(random_pos(&window), direction, 5);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
@@ -83,9 +84,11 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         let now = Instant::now();
         if (now - last_frame) > frame_duration {
             window.clear_screen()?;
-            window.render(&square)?;
+            for square in snake.parts.iter() {
+                window.render_square(square)?;
+            }
 
-            square.update_position(&window);
+            snake.update(&window);
             last_frame += frame_duration;
         }
 
@@ -94,16 +97,16 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
                 Event::Key(key_event) => {
                     match key_event.code {
                         KeyCode::Up | KeyCode::Char('w') => {
-                            square.change_direction(Direction::Up);
+                            snake.change_direction(Direction::Up);
                         }
                         KeyCode::Down | KeyCode::Char('s') => {
-                            square.change_direction(Direction::Down);
+                            snake.change_direction(Direction::Down);
                         }
                         KeyCode::Left | KeyCode::Char('a') => {
-                            square.change_direction(Direction::Left);
+                            snake.change_direction(Direction::Left);
                         }
                         KeyCode::Right | KeyCode::Char('d') => {
-                            square.change_direction(Direction::Right);
+                            snake.change_direction(Direction::Right);
                         }
                         KeyCode::Esc | KeyCode::Char('q') => break,
                         _ => continue,
