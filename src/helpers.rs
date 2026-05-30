@@ -1,3 +1,5 @@
+use std::{fmt::Display, io};
+
 use crate::types::{Axes, Direction, Window};
 
 pub fn random_pos(window: &Window) -> Axes {
@@ -23,4 +25,13 @@ pub fn make_width_pair(width: u16) -> u16 {
     } else {
         width - 1
     }
+}
+
+pub fn write_at_position(
+    writer: &mut impl io::Write,
+    position: &Axes,
+    content: &impl Display,
+) -> Result<(), io::Error> {
+    write!(writer, "{}{}", position, content)?;
+    writer.flush()
 }

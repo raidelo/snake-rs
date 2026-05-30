@@ -3,6 +3,8 @@ use std::{
     io::{self, Write, stdout},
 };
 
+use crate::helpers::write_at_position;
+
 #[derive(Debug)]
 pub struct Cursor {
     hidden: bool,
@@ -309,13 +311,4 @@ impl Render for Fruit {
     fn render(&self, window: &Window) -> Result<(), io::Error> {
         self.0.render(window)
     }
-}
-
-fn write_at_position(
-    writer: &mut impl Write,
-    position: &Axes,
-    content: &impl Display,
-) -> Result<(), io::Error> {
-    write!(writer, "{}{}", position, content)?;
-    writer.flush()
 }
