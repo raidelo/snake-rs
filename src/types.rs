@@ -51,8 +51,8 @@ impl Window {
     pub fn render(&self, item: &Square) -> Result<(), io::Error> {
         stdout().write_all(
             format!(
-                "\x1b[{};{}H{}",
-                item.position.y, item.position.x, item.glyph
+                "\x1b[{};{}H{}{}",
+                item.position.y, item.position.x, item.glyph, item.glyph
             )
             .as_bytes(),
         )?;
@@ -105,12 +105,12 @@ impl Square {
             }
             Direction::Left => {
                 if self.position.x > 0 {
-                    self.position.x -= 1;
+                    self.position.x -= 2;
                 }
             }
             Direction::Right => {
                 if self.position.x < window.width - 1 {
-                    self.position.x += 1;
+                    self.position.x += 2;
                 }
             }
         }

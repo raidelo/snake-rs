@@ -75,7 +75,8 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let direction = random_direction();
     let mut square = Square::new(random_pos(&window), direction);
 
-    let frame_duration = Duration::from_millis(constants::FRAME_TIME);
+    let speed = 60;
+    let frame_duration = Duration::from_millis(speed);
     let mut last_frame = Instant::now();
 
     loop {
