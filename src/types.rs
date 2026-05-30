@@ -51,15 +51,8 @@ impl Window {
         self.height = height;
     }
 
-    pub fn render_square(&self, square: &Square) -> Result<(), io::Error> {
-        stdout().write_all(
-            format!(
-                "{}{}{}{}",
-                square.position, square.color, square.glyph, square.glyph,
-            )
-            .as_bytes(),
-        )?;
-        stdout().flush()
+    pub fn render<T: Render>(&self, renderable: &T) -> Result<(), io::Error> {
+        renderable.render(self)
     }
 
     pub fn clear_screen(&self) -> Result<(), io::Error> {
@@ -74,6 +67,10 @@ impl Window {
     pub fn show_cursor(&mut self) -> Result<(), io::Error> {
         self.cursor.show()
     }
+}
+
+pub trait Render {
+    fn render(&self, window: &Window) -> Result<(), io::Error>;
 }
 
 const SNAKE_GLYPH: char = '\u{2588}';
@@ -128,6 +125,12 @@ impl SnakePart {
         } else {
             false
         }
+    }
+}
+
+impl Render for SnakePart {
+    fn render(&self, window: &Window) -> Result<(), io::Error> {
+        self.square.render(window)
     }
 }
 
@@ -277,5 +280,18 @@ impl Square {
             color,
             glyph,
         }
+    }
+}
+
+impl Render for Square {
+    fn render(&self, _window: &Window) -> Result<(), io::Error> {
+        stdout().write_all(
+            format!(
+                "{}{}{}{}",
+                self.position, self.color, self.glyph, self.glyph,
+            )
+            .as_bytes(),
+        )?;
+        stdout().flush()
     }
 }

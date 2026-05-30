@@ -92,7 +92,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         if (now - last_frame) > frame_duration {
             window.clear_screen()?;
             for part in snake.parts.iter() {
-                window.render_square(&part.square)?;
+                window.render(part)?;
             }
 
             snake.update(&window);
