@@ -251,6 +251,16 @@ impl Snake {
     }
 }
 
+impl Render for Snake {
+    fn render(&self, window: &Window) -> Result<(), io::Error> {
+        for part in self.parts.iter() {
+            window.render(part)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Color {
     pub r: u8,

@@ -11,14 +11,12 @@ use crossterm::event::KeyCode;
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::helpers::{make_width_pair, random_pos};
+use crate::helpers::{make_width_even, random_pos};
 use crate::palettes::PaletteStyle;
 use crate::types::{Axes, Direction, Fruit, Snake, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let _guard = RawModeGuard::new()?;
-
     let (tx, rx) = channel::<Event>(100);
 
     let handle = tokio::spawn(display_window(rx));
@@ -67,8 +65,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
-    let (mut width, height) = crossterm::terminal::size()?;
-    width = make_width_pair(width);
+    let _guard = RawModeGuard::new()?;
+
+    let (width, height) =
+        crossterm::terminal::size().map(|(width, height)| (make_width_even(width), height))?;
 
     let mut window = Window::new(width, height);
     window.hide_cursor()?;
@@ -79,7 +79,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         Axes::new(
             {
                 let p = width / 4;
-                if !p.is_multiple_of(2) { p } else { p - 1 }
+                if p.is_multiple_of(2) { p - 1 } else { p }
             },
             height / 2,
         ),
@@ -96,12 +96,11 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
 
     loop {
         let now = Instant::now();
-        if (now - last_frame) > frame_duration {
+        if (now - last_frame) >= frame_duration {
             window.clear_screen()?;
-            for part in snake.parts.iter() {
-                window.render(part)?;
-            }
+
             window.render(&fruit)?;
+            window.render(&snake)?;
 
             snake.update(&window);
             last_frame += frame_duration;
@@ -128,7 +127,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
                     };
                 }
 
-                Event::Resize(width, height) => window.resize(make_width_pair(width), height),
+                Event::Resize(width, height) => window.resize(make_width_even(width), height),
 
                 _ => (),
             },

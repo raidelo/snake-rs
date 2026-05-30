@@ -9,7 +9,7 @@ pub fn random_pos(window: &Window) -> Axes {
     )
 }
 
-pub fn make_width_pair(width: u16) -> u16 {
+pub fn make_width_even(width: u16) -> u16 {
     if width.is_multiple_of(2) {
         width
     } else {
