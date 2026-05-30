@@ -1,4 +1,7 @@
-use std::io::{self, Write, stdout};
+use std::{
+    fmt::Display,
+    io::{self, Write, stdout},
+};
 
 #[derive(Debug)]
 pub struct Cursor {
@@ -51,8 +54,8 @@ impl Window {
     pub fn render_square(&self, item: &Square) -> Result<(), io::Error> {
         stdout().write_all(
             format!(
-                "\x1b[{};{}H{}{}",
-                item.position.y, item.position.x, item.glyph, item.glyph
+                "{}\x1b[{};{}H{}{}",
+                item.color, item.position.y, item.position.x, item.glyph, item.glyph,
             )
             .as_bytes(),
         )?;
@@ -80,14 +83,16 @@ pub struct Square {
     pub glyph: char,
     pub position: Axes,
     pub direction: Direction,
+    pub color: Color,
 }
 
 impl Square {
-    pub fn new(position: Axes, direction: Direction) -> Self {
+    pub fn new(position: Axes, direction: Direction, color: Color) -> Self {
         Self {
             glyph: SNAKE_GLYPH,
             position,
             direction,
+            color,
         }
     }
 
@@ -167,7 +172,11 @@ pub struct Snake {
 
 impl Snake {
     pub fn new(position: Axes, direction: Direction, initial_parts: u16) -> Self {
-        let mut parts = vec![Square::new(position.clone(), direction.clone())];
+        let mut parts = vec![Square::new(
+            position.clone(),
+            direction.clone(),
+            default_snake_color(),
+        )];
 
         if initial_parts != 0 {
             for i in 1..initial_parts {
@@ -193,6 +202,7 @@ impl Snake {
                         },
                     },
                     ndirection,
+                    default_snake_color(),
                 ));
             }
         }
@@ -225,4 +235,28 @@ impl Snake {
             .expect("the snake must have at least 1 square of lenght")
             .change_direction(direction)
     }
+}
+
+#[derive(Debug)]
+pub struct Color {
+    r: u8,
+    g: u8,
+    b: u8,
+}
+
+impl Color {
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        Color { r, g, b }
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        /* ESC[38;2;{r};{g};{b}m */
+        write!(f, "\x1b[38;2;{};{};{}m", self.r, self.g, self.b)
+    }
+}
+
+fn default_snake_color() -> Color {
+    Color::new(100, 255, 100)
 }
