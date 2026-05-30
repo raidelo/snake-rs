@@ -1,6 +1,5 @@
 mod constants;
 mod helpers;
-mod palettes;
 mod types;
 
 use std::io;
@@ -12,8 +11,7 @@ use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
 use crate::helpers::{make_width_even, random_pos};
-use crate::palettes::PaletteStyle;
-use crate::types::{Axes, Direction, Fruit, Snake, Window};
+use crate::types::{Axes, Direction, Fruit, PaletteStyle, Snake, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

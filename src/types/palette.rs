@@ -1,4 +1,4 @@
-use crate::types::Color;
+use crate::types::color::Color;
 
 #[allow(unused)]
 pub struct PaletteColors {
