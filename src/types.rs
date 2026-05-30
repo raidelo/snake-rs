@@ -3,7 +3,7 @@ use std::{
     io::{self, Write, stdout},
 };
 
-use crate::helpers::write_at_position;
+use crate::{helpers::write_at_position, palettes::PaletteStyle};
 
 #[derive(Debug)]
 pub struct Cursor {
@@ -178,11 +178,18 @@ pub struct Snake {
 }
 
 impl Snake {
-    pub fn new(position: Axes, direction: Direction, initial_parts: u16) -> Self {
+    pub fn new(
+        position: Axes,
+        direction: Direction,
+        initial_parts: u16,
+        style: &PaletteStyle,
+    ) -> Self {
+        let palette = style.palette();
+
         let mut parts = vec![SnakePart::new(
             position.clone(),
             direction.clone(),
-            default_snake_color(),
+            palette.snake_head,
         )];
 
         if initial_parts != 0 {
@@ -209,7 +216,7 @@ impl Snake {
                         },
                     },
                     ndirection,
-                    default_snake_color(),
+                    palette.snake_body.clone(),
                 ));
             }
         }
@@ -244,14 +251,15 @@ impl Snake {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Color {
-    r: u8,
-    g: u8,
-    b: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
 impl Color {
+    #[allow(unused)]
     pub fn new(r: u8, g: u8, b: u8) -> Self {
         Color { r, g, b }
     }
@@ -262,14 +270,6 @@ impl Display for Color {
         /* ESC[38;2;{r};{g};{b}m */
         write!(f, "\x1b[38;2;{};{};{}m", self.r, self.g, self.b)
     }
-}
-
-fn default_snake_color() -> Color {
-    Color::new(100, 255, 100)
-}
-
-pub fn default_fruit_color() -> Color {
-    Color::new(240, 50, 100)
 }
 
 #[derive(Debug)]
@@ -302,8 +302,8 @@ impl Render for Square {
 pub struct Fruit(Square);
 
 impl Fruit {
-    pub fn new(position: Axes, color: Color) -> Self {
-        Self(Square::new(position, color, SNAKE_GLYPH))
+    pub fn new(position: Axes, color: &PaletteStyle) -> Self {
+        Self(Square::new(position, color.palette().food, SNAKE_GLYPH))
     }
 }
 

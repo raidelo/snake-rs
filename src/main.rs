@@ -1,5 +1,6 @@
 mod constants;
 mod helpers;
+mod palettes;
 mod types;
 
 use std::io;
@@ -11,7 +12,7 @@ use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
 use crate::helpers::{make_width_pair, random_pos};
-use crate::types::default_fruit_color;
+use crate::palettes::PaletteStyle;
 use crate::types::{Axes, Direction, Fruit, Snake, Window};
 
 #[tokio::main]
@@ -72,6 +73,8 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let mut window = Window::new(width, height);
     window.hide_cursor()?;
 
+    let palette = PaletteStyle::Organic;
+
     let mut snake = Snake::new(
         Axes::new(
             {
@@ -82,9 +85,10 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         ),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
+        &palette,
     );
 
-    let fruit = Fruit::new(random_pos(&window), default_fruit_color());
+    let fruit = Fruit::new(random_pos(&window), &palette);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
