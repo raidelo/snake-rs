@@ -10,11 +10,9 @@ use crossterm::event::KeyCode;
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
+use crate::types::Axes;
 use crate::types::Snake;
-use crate::{
-    helpers::{random_direction, random_pos},
-    types::{Direction, Window},
-};
+use crate::types::{Direction, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -73,8 +71,11 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let mut window = Window::new(width, height);
     window.hide_cursor()?;
 
-    let direction = random_direction();
-    let mut snake = Snake::new(random_pos(&window), direction, 5);
+    let mut snake = Snake::new(
+        Axes::new(width / 4, height / 2),
+        Direction::Right,
+        constants::INITIAL_SNAKE_LENGTH,
+    );
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
