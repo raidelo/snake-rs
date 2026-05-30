@@ -99,22 +99,22 @@ impl Square {
     pub fn update_position(&mut self, window: &Window) {
         match self.direction {
             Direction::Up => {
-                if self.position.y > 0 {
+                if self.position.y > 1 {
                     self.position.y -= 1;
                 }
             }
             Direction::Down => {
-                if self.position.y < window.height - 1 {
+                if self.position.y < window.height {
                     self.position.y += 1;
                 }
             }
             Direction::Left => {
-                if self.position.x > 1 {
+                if self.position.x > 2 {
                     self.position.x -= 2;
                 }
             }
             Direction::Right => {
-                if self.position.x < window.width - 1 {
+                if self.position.x < window.width - 2 {
                     self.position.x += 2;
                 }
             }
