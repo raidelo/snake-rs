@@ -266,6 +266,10 @@ fn default_snake_color() -> Color {
     Color::new(100, 255, 100)
 }
 
+pub fn default_fruit_color() -> Color {
+    Color::new(240, 50, 100)
+}
+
 #[derive(Debug)]
 pub struct Square {
     pub position: Axes,
@@ -285,13 +289,33 @@ impl Square {
 
 impl Render for Square {
     fn render(&self, _window: &Window) -> Result<(), io::Error> {
-        stdout().write_all(
-            format!(
-                "{}{}{}{}",
-                self.position, self.color, self.glyph, self.glyph,
-            )
-            .as_bytes(),
-        )?;
-        stdout().flush()
+        write_at_position(
+            &mut stdout(),
+            &self.position,
+            &format!("{}{}{}", self.color, self.glyph, self.glyph),
+        )
     }
+}
+
+pub struct Fruit(Square);
+
+impl Fruit {
+    pub fn new(position: Axes, color: Color) -> Self {
+        Self(Square::new(position, color, SNAKE_GLYPH))
+    }
+}
+
+impl Render for Fruit {
+    fn render(&self, window: &Window) -> Result<(), io::Error> {
+        self.0.render(window)
+    }
+}
+
+fn write_at_position(
+    writer: &mut impl Write,
+    position: &Axes,
+    content: &impl Display,
+) -> Result<(), io::Error> {
+    write!(writer, "{}{}", position, content)?;
+    writer.flush()
 }

@@ -10,8 +10,9 @@ use crossterm::event::KeyCode;
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::helpers::make_width_pair;
-use crate::types::{Axes, Direction, Snake, Window};
+use crate::helpers::{make_width_pair, random_pos};
+use crate::types::default_fruit_color;
+use crate::types::{Axes, Direction, Fruit, Snake, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -83,6 +84,8 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         constants::INITIAL_SNAKE_LENGTH,
     );
 
+    let fruit = Fruit::new(random_pos(&window), default_fruit_color());
+
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
     let mut last_frame = Instant::now();
@@ -94,6 +97,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
             for part in snake.parts.iter() {
                 window.render(part)?;
             }
+            window.render(&fruit)?;
 
             snake.update(&window);
             last_frame += frame_duration;
