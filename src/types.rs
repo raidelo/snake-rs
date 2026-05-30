@@ -43,6 +43,11 @@ impl Window {
         }
     }
 
+    pub fn resize(&mut self, width: u16, height: u16) {
+        self.width = width;
+        self.height = height;
+    }
+
     pub fn render(&self, item: &Square) -> Result<(), io::Error> {
         stdout().write_all(
             format!(
@@ -86,17 +91,46 @@ impl Square {
         }
     }
 
-    pub fn update_pos(&mut self) {
+    pub fn update_position(&mut self, window: &Window) {
         match self.direction {
-            Direction::Up => self.position.y -= 1,
-            Direction::Down => self.position.y += 1,
-            Direction::Left => self.position.x -= 1,
-            Direction::Right => self.position.x += 1,
+            Direction::Up => {
+                if self.position.y > 0 {
+                    self.position.y -= 1;
+                }
+            }
+            Direction::Down => {
+                if self.position.y < window.height - 1 {
+                    self.position.y += 1;
+                }
+            }
+            Direction::Left => {
+                if self.position.x > 0 {
+                    self.position.x -= 1;
+                }
+            }
+            Direction::Right => {
+                if self.position.x < window.width - 1 {
+                    self.position.x += 1;
+                }
+            }
+        }
+    }
+
+    pub fn set_direction(&mut self, direction: Direction) {
+        self.direction = direction;
+    }
+
+    pub fn change_direction(&mut self, direction: Direction) -> bool {
+        if direction != self.direction.counter_part() {
+            self.set_direction(direction);
+            true
+        } else {
+            false
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Axes {
     pub x: u16,
     pub y: u16,
@@ -108,10 +142,21 @@ impl Axes {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Direction {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Direction {
+    pub fn counter_part(&self) -> Self {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
 }

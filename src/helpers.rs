@@ -1,5 +1,3 @@
-use std::io::stdin;
-
 use crate::types::{Axes, Direction, Window};
 
 pub fn random_pos(window: &Window) -> Axes {
@@ -17,14 +15,4 @@ pub fn random_direction() -> Direction {
         4 => Direction::Right,
         _ => unreachable!(),
     }
-}
-
-pub fn get_input() -> String {
-    let mut s = String::new();
-    let _ = stdin().read_line(&mut s);
-    s
-}
-
-pub async fn sleep(millis: u64) -> () {
-    tokio::time::sleep(tokio::time::Duration::from_millis(millis)).await;
 }

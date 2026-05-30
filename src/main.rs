@@ -1,37 +1,144 @@
+mod constants;
 mod helpers;
 mod types;
 
+use std::io;
+use std::time::Duration;
+
+use crossterm::event::Event;
+use crossterm::event::KeyCode;
+use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
+use tokio::time::Instant;
+
 use crate::{
-    helpers::{get_input, random_direction, random_pos, sleep},
-    types::{Square, Window},
+    helpers::{random_direction, random_pos},
+    types::{Direction, Square, Window},
 };
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let task = tokio::spawn(run());
-    task.await??;
+    let _guard = RawModeGuard::new()?;
+
+    let (tx, rx) = channel::<Event>(100);
+
+    let handle = tokio::spawn(display_window(rx));
+
+    while let Ok(event_occurred) = tokio::task::spawn_blocking(|| {
+        crossterm::event::poll(Duration::from_millis(constants::POLL_TIME))
+    })
+    .await?
+    {
+        if handle.is_finished() {
+            break;
+        }
+
+        if !event_occurred {
+            continue;
+        }
+
+        if let Ok(event) = tokio::task::spawn_blocking(crossterm::event::read).await? {
+            if tx.send(event).await.is_err() {
+                break;
+            };
+        } else {
+            continue;
+        };
+    }
+
+    match handle.await {
+        Ok(Ok(())) => Ok(()),
+        Ok(Err(e)) => Err(Box::new(e)),
+        Err(err) => {
+            if let Ok(panic) = err.try_into_panic() {
+                let msg = panic
+                    .downcast_ref::<&str>()
+                    .map(|s| s.to_string())
+                    .or_else(|| panic.downcast_ref::<String>().cloned())
+                    .unwrap_or_else(|| "pánico desconocido".to_string());
+                Err(Box::new(io::Error::other(msg)))
+            } else {
+                Err(Box::new(io::Error::other(
+                    "tarea cancelada inesperadamente",
+                )))
+            }
+        }
+    }
+    .map_err(|err| err.into())
+}
+
+async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
+    let (width, height) = crossterm::terminal::size()?;
+
+    let mut window = Window::new(width, height);
+    window.hide_cursor()?;
+
+    let direction = random_direction();
+    let mut square = Square::new(random_pos(&window), direction);
+
+    let frame_duration = Duration::from_millis(constants::FRAME_TIME);
+    let mut last_frame = Instant::now();
+
+    loop {
+        let now = Instant::now();
+        if (now - last_frame) > frame_duration {
+            window.clear_screen()?;
+            window.render(&square)?;
+
+            square.update_position(&window);
+            last_frame += frame_duration;
+        }
+
+        match rx.try_recv() {
+            Ok(event) => match event {
+                Event::Key(key_event) => {
+                    match key_event.code {
+                        KeyCode::Up | KeyCode::Char('w') => {
+                            square.change_direction(Direction::Up);
+                        }
+                        KeyCode::Down | KeyCode::Char('s') => {
+                            square.change_direction(Direction::Down);
+                        }
+                        KeyCode::Left | KeyCode::Char('a') => {
+                            square.change_direction(Direction::Left);
+                        }
+                        KeyCode::Right | KeyCode::Char('d') => {
+                            square.change_direction(Direction::Right);
+                        }
+                        KeyCode::Esc | KeyCode::Char('q') => break,
+                        _ => continue,
+                    };
+                }
+
+                Event::Resize(width, height) => window.resize(width, height),
+
+                _ => (),
+            },
+
+            Err(TryRecvError::Empty) => (),
+            Err(TryRecvError::Disconnected) => break,
+        };
+    }
+
+    window.show_cursor()?;
 
     Ok(())
 }
 
-async fn run() -> Result<(), std::io::Error> {
-    let Some((width, height)) = terminal_size::terminal_size() else {
-        return Ok(());
-    };
+struct RawModeGuard;
 
-    let mut window = Window::new(width.0, height.0);
-    window.hide_cursor()?;
+impl RawModeGuard {
+    fn new() -> Result<Self, io::Error> {
+        crossterm::terminal::enable_raw_mode()?;
+        Ok(RawModeGuard)
+    }
+}
 
-    let pos = random_pos(&window);
-    let direction = random_direction();
-    let mut square = Square::new(pos, direction);
-
-    loop {
-        window.clear_screen()?;
-        window.render(&square)?;
-
-        sleep(100).await;
-
-        square.update_pos();
+impl Drop for RawModeGuard {
+    fn drop(&mut self) {
+        for _ in 0..2 {
+            if let Ok(()) = crossterm::terminal::disable_raw_mode() {
+                break;
+            };
+        }
     }
 }
