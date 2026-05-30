@@ -170,7 +170,7 @@ impl Snake {
         let mut parts = vec![Square::new(position.clone(), direction.clone())];
 
         if initial_parts != 0 {
-            for i in 1..=initial_parts {
+            for i in 1..initial_parts {
                 let ndirection = direction.clone();
 
                 parts.push(Square::new(
@@ -205,22 +205,18 @@ impl Snake {
             square.update_position(window);
         }
 
-        if let Some((index1, index2)) = self._first_different_squares() {
-            let ndirection = self.parts.get(index1).unwrap().direction.clone();
+        let mut left: Option<Direction> = None;
+        let mut right: Option<Direction>;
 
-            self.parts.get_mut(index2).unwrap().direction = ndirection;
-        }
-    }
+        for square in self.parts.iter_mut() {
+            right = Some(square.direction.clone());
 
-    fn _first_different_squares(&self) -> Option<(usize, usize)> {
-        for (pos, square) in self.parts.iter().enumerate() {
-            if let Some(next_square) = self.parts.get(pos + 1)
-                && square.direction != next_square.direction
-            {
-                return Some((pos, pos + 1));
+            if let Some(ndirection) = left {
+                square.direction = ndirection;
             }
+
+            left = right;
         }
-        None
     }
 
     pub fn change_direction(&mut self, direction: Direction) -> bool {
