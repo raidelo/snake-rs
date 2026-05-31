@@ -1,6 +1,10 @@
 use std::io::{self, Write, stdout};
 
-use crate::types::{cursor::Cursor, render::Render};
+use crate::{
+    constants::SQUARE_GLYPH,
+    helpers::write_at_position,
+    types::{Axes, cursor::Cursor, palette::PaletteColors, render::Render},
+};
 
 #[derive(Debug)]
 pub struct Window {
@@ -38,5 +42,32 @@ impl Window {
 
     pub fn show_cursor(&mut self) -> Result<(), io::Error> {
         self.cursor.show()
+    }
+
+    pub fn draw_background(&self, palette: &PaletteColors) -> Result<(), io::Error> {
+        let mut stdout = stdout();
+
+        let color = &palette.borders;
+        let background_color = &palette.background;
+
+        let top_down = format!(
+            "{}{}",
+            color,
+            String::from(SQUARE_GLYPH).repeat(self.width.into())
+        );
+
+        let center = format!(
+            "{color}{SQUARE_GLYPH}{SQUARE_GLYPH}{background_color}{}{color}{SQUARE_GLYPH}{SQUARE_GLYPH}",
+            String::from(SQUARE_GLYPH).repeat((self.width - 4).into())
+        );
+
+        write_at_position(&mut stdout, &Axes::new(1, 1), &top_down)?;
+        write_at_position(&mut stdout, &Axes::new(1, self.height), &top_down)?;
+
+        for i in 2..(self.height) {
+            write_at_position(&mut stdout, &Axes::new(1, i), &center)?;
+        }
+
+        Ok(())
     }
 }

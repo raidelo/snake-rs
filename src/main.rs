@@ -92,10 +92,12 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let frame_duration = Duration::from_millis(speed);
     let mut last_frame = Instant::now();
 
+    window.clear_screen()?;
+
     loop {
         let now = Instant::now();
         if (now - last_frame) >= frame_duration {
-            window.clear_screen()?;
+            window.draw_background(&palette)?;
 
             window.render(&fruit)?;
             window.render(&snake)?;
