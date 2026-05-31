@@ -25,22 +25,22 @@ impl SnakePart {
     pub fn update_position(&mut self, window: &Window) {
         match self.direction {
             Direction::Up => {
-                if self.square.position.y > 1 {
+                if self.square.position.y > 2 {
                     self.square.position.y -= 1;
                 }
             }
             Direction::Down => {
-                if self.square.position.y < window.height {
+                if self.square.position.y < window.height - 1 {
                     self.square.position.y += 1;
                 }
             }
             Direction::Left => {
-                if self.square.position.x > 2 {
+                if self.square.position.x > 4 {
                     self.square.position.x -= 2;
                 }
             }
             Direction::Right => {
-                if self.square.position.x < window.width - 2 {
+                if self.square.position.x < window.width - 4 {
                     self.square.position.x += 2;
                 }
             }

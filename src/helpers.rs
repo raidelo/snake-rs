@@ -2,10 +2,10 @@ use std::{fmt::Display, io};
 
 use crate::types::{Axes, Window};
 
-pub fn random_pos(window: &Window) -> Axes {
+pub fn random_pos_on_background(window: &Window) -> Axes {
     Axes::new(
-        rand::random_range(0..window.width),
-        rand::random_range(0..window.height),
+        rand::random_range(3..=(window.width - 2)),
+        rand::random_range(3..=(window.height - 1)),
     )
 }
 
