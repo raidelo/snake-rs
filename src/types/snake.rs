@@ -1,8 +1,8 @@
 use std::io;
 
 use crate::types::{
-    axes::Axes, direction::Direction, palette::PaletteStyle, render::Render, snake_part::SnakePart,
-    window::Window,
+    axes::Axes, direction::Direction, palette::PaletteColors, render::Render,
+    snake_part::SnakePart, window::Window,
 };
 
 pub struct Snake {
@@ -14,14 +14,12 @@ impl Snake {
         position: Axes,
         direction: Direction,
         initial_parts: u16,
-        style: &PaletteStyle,
+        palette: &PaletteColors,
     ) -> Self {
-        let palette = style.palette();
-
         let mut parts = vec![SnakePart::new(
             position.clone(),
             direction.clone(),
-            palette.snake_head,
+            palette.snake_head.clone(),
         )];
 
         if initial_parts != 0 {

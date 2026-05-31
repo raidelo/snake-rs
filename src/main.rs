@@ -71,7 +71,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let mut window = Window::new(width, height);
     window.hide_cursor()?;
 
-    let palette = PaletteStyle::Organic;
+    let palette = PaletteStyle::Organic.palette();
 
     let mut snake = Snake::new(
         Axes::new(

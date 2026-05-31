@@ -2,14 +2,14 @@ use std::io;
 
 use crate::{
     constants::SQUARE_GLYPH,
-    types::{axes::Axes, palette::PaletteStyle, render::Render, square::Square, window::Window},
+    types::{axes::Axes, palette::PaletteColors, render::Render, square::Square, window::Window},
 };
 
 pub struct Fruit(Square);
 
 impl Fruit {
-    pub fn new(position: Axes, color: &PaletteStyle) -> Self {
-        Self(Square::new(position, color.palette().food, SQUARE_GLYPH))
+    pub fn new(position: Axes, color: &PaletteColors) -> Self {
+        Self(Square::new(position, color.food.clone(), SQUARE_GLYPH))
     }
 }
 
