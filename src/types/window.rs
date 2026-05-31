@@ -1,25 +1,22 @@
-use std::io::{self, Write, stdout};
+use std::io::{self, stdout};
+
+use crossterm::ExecutableCommand;
 
 use crate::{
     constants::SQUARE_GLYPH,
     helpers::write_at_position,
-    types::{Axes, cursor::Cursor, palette::PaletteColors, render::Render},
+    types::{Axes, palette::PaletteColors, render::Render},
 };
 
 #[derive(Debug)]
 pub struct Window {
     pub width: u16,
     pub height: u16,
-    cursor: Cursor,
 }
 
 impl Window {
     pub fn new(width: u16, height: u16) -> Self {
-        Self {
-            width,
-            height,
-            cursor: Cursor::new(),
-        }
+        Self { width, height }
     }
 
     pub fn resize(&mut self, width: u16, height: u16) {
@@ -32,16 +29,20 @@ impl Window {
     }
 
     pub fn clear_screen(&self) -> Result<(), io::Error> {
-        stdout().write_all("\x1b[2J".as_bytes())?;
-        stdout().flush()
+        stdout().execute(crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::All,
+        ))?;
+        Ok(())
     }
 
-    pub fn hide_cursor(&mut self) -> Result<(), io::Error> {
-        self.cursor.hide()
+    pub fn hide_cursor(&self) -> Result<(), io::Error> {
+        stdout().execute(crossterm::cursor::Hide)?;
+        Ok(())
     }
 
-    pub fn show_cursor(&mut self) -> Result<(), io::Error> {
-        self.cursor.show()
+    pub fn show_cursor(&self) -> Result<(), io::Error> {
+        stdout().execute(crossterm::cursor::Show)?;
+        Ok(())
     }
 
     pub fn draw_background(&self, palette: &PaletteColors) -> Result<(), io::Error> {

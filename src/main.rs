@@ -5,8 +5,7 @@ mod types;
 use std::io;
 use std::time::Duration;
 
-use crossterm::event::Event;
-use crossterm::event::KeyCode;
+use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 

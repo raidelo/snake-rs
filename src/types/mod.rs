@@ -1,6 +1,5 @@
 mod axes;
 mod color;
-mod cursor;
 mod direction;
 mod fruit;
 mod palette;
