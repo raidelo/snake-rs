@@ -12,5 +12,5 @@ pub use axes::Axes;
 pub use direction::Direction;
 pub use fruit::Fruit;
 pub use palette::PaletteStyle;
-pub use snake::Snake;
+pub use snake::{ImpactError, Snake};
 pub use window::Window;

@@ -2,15 +2,16 @@ mod constants;
 mod helpers;
 mod types;
 
-use std::io;
+use std::io::{self, Write, stdout};
 use std::time::Duration;
 
+use crossterm::QueueableCommand;
 use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
 use crate::helpers::reset_terminal;
-use crate::types::{Axes, Direction, Fruit, PaletteStyle, Snake, Window};
+use crate::types::{Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -97,14 +98,17 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let frame_duration = Duration::from_millis(speed);
     let mut last_frame = Instant::now();
 
+    let mut impact: Option<ImpactError> = None;
+
     loop {
         let now = Instant::now();
         if (now - last_frame) >= frame_duration {
             window.set_background_color(&palette)?;
             window.draw_borders(&palette)?;
 
-            if let Err(impact) = snake.update(&window) {
-                todo!();
+            if let Err(imp) = snake.update(&window) {
+                impact = Some(imp);
+                break;
             };
             window.render(&snake)?;
 
@@ -147,6 +151,18 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     window.show_cursor()?;
 
     reset_terminal()?;
+
+    if impact.is_some() {
+        stdout()
+            .queue(crossterm::style::SetAttribute(
+                crossterm::style::Attribute::Bold,
+            ))?
+            .queue(crossterm::style::Print("You lost\n"))?
+            .queue(crossterm::style::SetAttribute(
+                crossterm::style::Attribute::Reset,
+            ))?
+            .flush()?;
+    };
 
     Ok(())
 }

@@ -5,6 +5,7 @@ use crate::types::{
     snake_part::SnakePart, window::Window,
 };
 
+#[derive(Debug)]
 pub enum ImpactError {
     BodyImpact,
     BorderImpact,
