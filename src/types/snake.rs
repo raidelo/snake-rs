@@ -6,6 +6,7 @@ use crate::types::{
 };
 
 pub enum ImpactError {
+    BodyImpact,
     BorderImpact,
 }
 
@@ -21,7 +22,7 @@ impl Snake {
         palette: &PaletteColors,
     ) -> Self {
         let mut parts = vec![SnakePart::new(
-            position.clone(),
+            position,
             direction.clone(),
             palette.snake_head,
         )];
@@ -108,6 +109,10 @@ fn is_going_to_impact(snake: &Snake, window: &Window) -> Result<(), ImpactError>
         return Err(ImpactError::BorderImpact);
     }
 
+    if check_body_impact(snake) {
+        return Err(ImpactError::BodyImpact);
+    }
+
     Ok(())
 }
 
@@ -124,4 +129,30 @@ fn check_border_impact(snake: &Snake, window: &Window) -> bool {
 
         Direction::Right => pos.x == window.bg_end.x - 2,
     }
+}
+
+fn check_body_impact(snake: &Snake) -> bool {
+    let head_next_pos: Axes = get_next_position(snake.head());
+
+    let mut part_next_pos: Axes;
+    for part in snake.parts.iter().skip(1) {
+        part_next_pos = get_next_position(part);
+
+        if head_next_pos == part_next_pos {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn get_next_position(snake_part: &SnakePart) -> Axes {
+    let mut pos = snake_part.square.position;
+    match snake_part.direction {
+        Direction::Up => pos.y -= 1,
+        Direction::Down => pos.y += 1,
+        Direction::Left => pos.x -= 2,
+        Direction::Right => pos.x += 2,
+    }
+    pos
 }
