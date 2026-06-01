@@ -29,8 +29,7 @@ impl Render for Square {
             .queue(crossterm::style::Print(format!(
                 "{}{}",
                 self.glyph, self.glyph
-            )))?;
-
-        stdout().flush()
+            )))?
+            .flush()
     }
 }
