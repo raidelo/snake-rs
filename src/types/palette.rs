@@ -1,6 +1,7 @@
 use crossterm::style::Color;
 
 #[allow(unused)]
+#[derive(Debug)]
 pub struct PaletteColors {
     pub background: Color,
     pub snake_body: Color,
@@ -94,7 +95,7 @@ impl PaletteColors {
 }
 
 #[allow(unused)]
-#[derive(Clone)]
+#[derive(Debug)]
 pub enum PaletteStyle {
     Classic,
     Neon,

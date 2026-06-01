@@ -11,6 +11,7 @@ pub enum ImpactError {
     BorderImpact,
 }
 
+#[derive(Debug)]
 pub struct Snake {
     pub parts: Vec<SnakePart>,
 }
@@ -22,17 +23,11 @@ impl Snake {
         initial_length: u16,
         palette: &PaletteColors,
     ) -> Self {
-        let mut parts = vec![SnakePart::new(
-            position,
-            direction.clone(),
-            palette.snake_head,
-        )];
+        let mut parts = vec![SnakePart::new(position, direction, palette.snake_head)];
 
         for i in 1..initial_length {
-            let ndirection = direction.clone();
-
             parts.push(SnakePart::new(
-                match ndirection {
+                match direction {
                     Direction::Up => Axes {
                         y: position.y.saturating_add(i),
                         ..position
@@ -50,7 +45,7 @@ impl Snake {
                         ..position
                     },
                 },
-                ndirection,
+                direction,
                 palette.snake_body,
             ));
         }
@@ -69,10 +64,10 @@ impl Snake {
         let mut right: Option<Direction>;
 
         for square in self.parts.iter_mut() {
-            right = Some(square.direction.clone());
+            right = Some(square.direction);
 
-            if let Some(ndirection) = left {
-                square.direction = ndirection;
+            if let Some(direction) = left {
+                square.direction = direction;
             }
 
             left = right;

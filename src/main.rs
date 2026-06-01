@@ -167,6 +167,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     Ok(())
 }
 
+#[derive(Debug)]
 struct RawModeGuard;
 
 impl RawModeGuard {

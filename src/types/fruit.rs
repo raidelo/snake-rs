@@ -6,6 +6,7 @@ use crate::{
     types::{axes::Axes, palette::PaletteColors, render::Render, square::Square, window::Window},
 };
 
+#[derive(Debug)]
 pub struct Fruit(Square);
 
 impl Fruit {
