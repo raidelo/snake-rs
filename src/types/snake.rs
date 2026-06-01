@@ -19,7 +19,7 @@ impl Snake {
         let mut parts = vec![SnakePart::new(
             position.clone(),
             direction.clone(),
-            palette.snake_head.clone(),
+            palette.snake_head,
         )];
 
         for i in 1..initial_length {
@@ -45,7 +45,7 @@ impl Snake {
                     },
                 },
                 ndirection,
-                palette.snake_body.clone(),
+                palette.snake_body,
             ));
         }
 
