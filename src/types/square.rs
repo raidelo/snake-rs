@@ -1,8 +1,8 @@
 use std::io::{self, Write, stdout};
 
-use crossterm::QueueableCommand;
+use crossterm::{QueueableCommand, style::Color};
 
-use crate::types::{axes::Axes, color::Color, render::Render, window::Window};
+use crate::types::{axes::Axes, render::Render, window::Window};
 
 #[derive(Debug)]
 pub struct Square {
@@ -24,13 +24,7 @@ impl Square {
 impl Render for Square {
     fn render(&self, _window: &Window) -> Result<(), io::Error> {
         stdout()
-            .queue(crossterm::style::SetBackgroundColor(
-                crossterm::style::Color::Rgb {
-                    r: self.color.r,
-                    g: self.color.g,
-                    b: self.color.b,
-                },
-            ))?
+            .queue(crossterm::style::SetBackgroundColor(self.color))?
             .queue(crossterm::cursor::MoveTo(self.position.x, self.position.y))?
             .queue(crossterm::style::Print(format!(
                 "{}{}",

@@ -1,11 +1,10 @@
 use std::io;
 
+use crossterm::style::Color;
+
 use crate::{
     constants::SQUARE_GLYPH,
-    types::{
-        axes::Axes, color::Color, direction::Direction, render::Render, square::Square,
-        window::Window,
-    },
+    types::{axes::Axes, direction::Direction, render::Render, square::Square, window::Window},
 };
 
 #[derive(Debug)]

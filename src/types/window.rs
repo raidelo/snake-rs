@@ -54,26 +54,14 @@ impl Window {
     }
 
     pub fn set_background_color(&self, palette: &PaletteColors) -> Result<(), io::Error> {
-        stdout().execute(crossterm::style::SetBackgroundColor(
-            crossterm::style::Color::Rgb {
-                r: palette.background.r,
-                g: palette.background.g,
-                b: palette.background.b,
-            },
-        ))?;
+        stdout().execute(crossterm::style::SetBackgroundColor(palette.background))?;
         self.clear_screen()
     }
 
     pub fn draw_borders(&self, palette: &PaletteColors) -> Result<(), io::Error> {
         let mut stdout = stdout();
 
-        stdout.queue(crossterm::style::SetBackgroundColor(
-            crossterm::style::Color::Rgb {
-                r: palette.borders.r,
-                g: palette.borders.g,
-                b: palette.borders.b,
-            },
-        ))?;
+        stdout.queue(crossterm::style::SetBackgroundColor(palette.borders))?;
 
         let top_down = String::from(" ").repeat((self.width).into());
         for i in [0, self.height - 1] {

@@ -1,5 +1,4 @@
 mod axes;
-mod color;
 mod direction;
 mod fruit;
 mod palette;
