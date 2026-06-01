@@ -9,10 +9,18 @@ use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
+use crate::helpers::reset_terminal;
 use crate::types::{Axes, Direction, Fruit, PaletteStyle, Snake, Window};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        let _ = reset_terminal();
+
+        default_hook(panic_info)
+    }));
+
     let (tx, rx) = channel::<Event>(100);
 
     let handle = tokio::spawn(display_window(rx));
