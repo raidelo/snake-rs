@@ -13,7 +13,7 @@ impl Snake {
     pub fn new(
         position: Axes,
         direction: Direction,
-        initial_parts: u16,
+        initial_length: u16,
         palette: &PaletteColors,
     ) -> Self {
         let mut parts = vec![SnakePart::new(
@@ -22,33 +22,31 @@ impl Snake {
             palette.snake_head.clone(),
         )];
 
-        if initial_parts != 0 {
-            for i in 1..initial_parts {
-                let ndirection = direction.clone();
+        for i in 1..initial_length {
+            let ndirection = direction.clone();
 
-                parts.push(SnakePart::new(
-                    match ndirection {
-                        Direction::Up => Axes {
-                            y: position.y.saturating_add(i),
-                            ..position
-                        },
-                        Direction::Down => Axes {
-                            y: position.y.saturating_sub(i),
-                            ..position
-                        },
-                        Direction::Left => Axes {
-                            x: position.x.saturating_add(i * 2),
-                            ..position
-                        },
-                        Direction::Right => Axes {
-                            x: position.x.saturating_sub(i * 2),
-                            ..position
-                        },
+            parts.push(SnakePart::new(
+                match ndirection {
+                    Direction::Up => Axes {
+                        y: position.y.saturating_add(i),
+                        ..position
                     },
-                    ndirection,
-                    palette.snake_body.clone(),
-                ));
-            }
+                    Direction::Down => Axes {
+                        y: position.y.saturating_sub(i),
+                        ..position
+                    },
+                    Direction::Left => Axes {
+                        x: position.x.saturating_add(i * 2),
+                        ..position
+                    },
+                    Direction::Right => Axes {
+                        x: position.x.saturating_sub(i * 2),
+                        ..position
+                    },
+                },
+                ndirection,
+                palette.snake_body.clone(),
+            ));
         }
 
         Self { parts }

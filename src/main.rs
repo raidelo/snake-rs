@@ -9,7 +9,6 @@ use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::helpers::make_width_even;
 use crate::helpers::random_pos_on_background;
 use crate::types::{Axes, Direction, Fruit, PaletteStyle, Snake, Window};
 
@@ -76,7 +75,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         Axes::new(
             {
                 let p = width / 4;
-                if p.is_multiple_of(2) { p - 1 } else { p }
+                if p.is_multiple_of(2) { p } else { p - 1 }
             },
             height / 2,
         ),
@@ -125,7 +124,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
                     };
                 }
 
-                Event::Resize(width, height) => window.resize(make_width_even(width), height),
+                Event::Resize(width, height) => window.resize(width, height),
 
                 _ => (),
             },

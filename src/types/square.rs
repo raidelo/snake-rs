@@ -1,9 +1,8 @@
-use std::io::{self, stdout};
+use std::io::{self, Write, stdout};
 
-use crate::{
-    helpers::write_at_position,
-    types::{axes::Axes, color::Color, render::Render, window::Window},
-};
+use crossterm::QueueableCommand;
+
+use crate::types::{axes::Axes, color::Color, render::Render, window::Window};
 
 #[derive(Debug)]
 pub struct Square {
@@ -24,10 +23,20 @@ impl Square {
 
 impl Render for Square {
     fn render(&self, _window: &Window) -> Result<(), io::Error> {
-        write_at_position(
-            &mut stdout(),
-            &self.position,
-            &format!("{}{}{}", self.color, self.glyph, self.glyph),
-        )
+        stdout()
+            .queue(crossterm::style::SetBackgroundColor(
+                crossterm::style::Color::Rgb {
+                    r: self.color.r,
+                    g: self.color.g,
+                    b: self.color.b,
+                },
+            ))?
+            .queue(crossterm::cursor::MoveTo(self.position.x, self.position.y))?
+            .queue(crossterm::style::Print(format!(
+                "{}{}",
+                self.glyph, self.glyph
+            )))?;
+
+        stdout().flush()
     }
 }
