@@ -10,7 +10,7 @@ use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::helpers::reset_terminal;
+use crate::helpers::{make_even_by_substracting, reset_terminal};
 use crate::types::{Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window};
 
 #[tokio::main]
@@ -80,13 +80,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let palette = PaletteStyle::Organic.palette();
 
     let mut snake = Snake::new(
-        Axes::new(
-            {
-                let p = width / 4;
-                if p.is_multiple_of(2) { p } else { p - 1 }
-            },
-            height / 2,
-        ),
+        Axes::new(make_even_by_substracting(width / 4), height / 2),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
         &palette,
