@@ -10,7 +10,7 @@ use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::helpers::{make_even_by_substracting, reset_terminal};
+use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
 use crate::types::{
     Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window, is_going_to_eat_fruit,
 };
@@ -71,13 +71,39 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .map_err(|err| err.into())
 }
 
-async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
-    let _guard = RawModeGuard::new()?;
+async fn display_window(rx: Receiver<Event>) -> Result<(), io::Error> {
+    setup_terminal()?;
 
+    let result = run_game(rx).await;
+
+    reset_terminal()?;
+
+    if let Err(err) = result {
+        match err {
+            GameError::ImpactError(_) => {
+                stdout()
+                    .queue(crossterm::style::SetAttribute(
+                        crossterm::style::Attribute::Bold,
+                    ))?
+                    .queue(crossterm::style::Print("You lost\n"))?
+                    .queue(crossterm::style::SetAttribute(
+                        crossterm::style::Attribute::Reset,
+                    ))?
+                    .flush()?;
+            }
+            GameError::IOError(err) => {
+                return Err(err);
+            }
+        }
+    };
+
+    Ok(())
+}
+
+async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     let (width, height) = crossterm::terminal::size()?;
 
     let mut window = Window::new(width, height);
-    window.hide_cursor()?;
 
     let palette = PaletteStyle::Organic.palette();
 
@@ -95,8 +121,6 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let frame_duration = Duration::from_millis(speed);
     let mut last_frame = Instant::now();
 
-    let mut impact: Option<ImpactError> = None;
-
     loop {
         let now = Instant::now();
         if (now - last_frame) >= frame_duration {
@@ -111,8 +135,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
             };
 
             if let Err(imp) = snake.update(&window, grow, &palette) {
-                impact = Some(imp);
-                break;
+                break Err(imp.into());
             };
             window.render(&snake)?;
 
@@ -137,7 +160,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
                         KeyCode::Right | KeyCode::Char('d') => {
                             snake.change_direction(Direction::Right);
                         }
-                        KeyCode::Esc | KeyCode::Char('q') => break,
+                        KeyCode::Esc | KeyCode::Char('q') => break Ok(()),
                         _ => continue,
                     };
                 }
@@ -148,45 +171,25 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
             },
 
             Err(TryRecvError::Empty) => (),
-            Err(TryRecvError::Disconnected) => break,
+            Err(TryRecvError::Disconnected) => break Ok(()),
         };
     }
-
-    window.show_cursor()?;
-
-    reset_terminal()?;
-
-    if impact.is_some() {
-        stdout()
-            .queue(crossterm::style::SetAttribute(
-                crossterm::style::Attribute::Bold,
-            ))?
-            .queue(crossterm::style::Print("You lost\n"))?
-            .queue(crossterm::style::SetAttribute(
-                crossterm::style::Attribute::Reset,
-            ))?
-            .flush()?;
-    };
-
-    Ok(())
 }
 
-#[derive(Debug)]
-struct RawModeGuard;
+#[allow(unused)]
+enum GameError {
+    IOError(io::Error),
+    ImpactError(ImpactError),
+}
 
-impl RawModeGuard {
-    fn new() -> Result<Self, io::Error> {
-        crossterm::terminal::enable_raw_mode()?;
-        Ok(RawModeGuard)
+impl From<io::Error> for GameError {
+    fn from(value: io::Error) -> Self {
+        Self::IOError(value)
     }
 }
 
-impl Drop for RawModeGuard {
-    fn drop(&mut self) {
-        for _ in 0..2 {
-            if let Ok(()) = crossterm::terminal::disable_raw_mode() {
-                break;
-            };
-        }
+impl From<ImpactError> for GameError {
+    fn from(value: ImpactError) -> Self {
+        Self::ImpactError(value)
     }
 }

@@ -46,16 +46,6 @@ impl Window {
         Ok(())
     }
 
-    pub fn hide_cursor(&self) -> Result<(), io::Error> {
-        stdout().execute(crossterm::cursor::Hide)?;
-        Ok(())
-    }
-
-    pub fn show_cursor(&self) -> Result<(), io::Error> {
-        stdout().execute(crossterm::cursor::Show)?;
-        Ok(())
-    }
-
     pub fn set_background_color(&self, palette: &PaletteColors) -> Result<(), io::Error> {
         stdout().execute(crossterm::style::SetBackgroundColor(palette.background))?;
         self.clear_screen()
