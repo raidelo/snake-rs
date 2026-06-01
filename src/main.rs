@@ -143,6 +143,8 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
 
     window.show_cursor()?;
 
+    reset_terminal()?;
+
     Ok(())
 }
 
