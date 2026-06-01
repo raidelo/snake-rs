@@ -11,7 +11,9 @@ use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
 use crate::helpers::{make_even_by_substracting, reset_terminal};
-use crate::types::{Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window};
+use crate::types::{
+    Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window, is_going_to_eat_fruit,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -85,8 +87,9 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         constants::INITIAL_SNAKE_LENGTH,
         &palette,
     );
+    let mut grow: bool;
 
-    let fruit = Fruit::random_generate(&window, &palette);
+    let mut fruit = Fruit::random_generate(&window, &palette);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
@@ -100,7 +103,14 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
             window.set_background_color(&palette)?;
             window.draw_borders(&palette)?;
 
-            if let Err(imp) = snake.update(&window) {
+            grow = if is_going_to_eat_fruit(&snake, &fruit) {
+                fruit.regenerate(&window);
+                true
+            } else {
+                false
+            };
+
+            if let Err(imp) = snake.update(&window, grow, &palette) {
                 impact = Some(imp);
                 break;
             };

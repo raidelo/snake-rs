@@ -1,6 +1,6 @@
 use crate::{
     helpers::make_even_by_substracting,
-    types::{Axes, Direction, ImpactError, Snake, Window, square::Square},
+    types::{Axes, Direction, Fruit, ImpactError, Snake, Window, square::Square},
 };
 
 pub fn random_pos_on_background(window: &Window) -> Axes {
@@ -62,4 +62,10 @@ pub fn get_next_position(square: &Square, direction: &Direction) -> Axes {
         Direction::Right => pos.x += 2,
     }
     pos
+}
+
+pub fn is_going_to_eat_fruit(snake: &Snake, fruit: &Fruit) -> bool {
+    let head = snake.head();
+
+    get_next_position(&head.square, &head.direction) == fruit.position()
 }

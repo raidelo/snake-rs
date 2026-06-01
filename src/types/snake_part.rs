@@ -7,7 +7,7 @@ use crate::{
     types::{axes::Axes, direction::Direction, render::Render, square::Square, window::Window},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SnakePart {
     pub direction: Direction,
     pub square: Square,

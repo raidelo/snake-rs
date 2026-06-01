@@ -19,6 +19,14 @@ impl Fruit {
     pub fn random_generate(window: &Window, color: &PaletteColors) -> Self {
         Self::new(random_pos_on_background(window), color)
     }
+
+    pub fn regenerate(&mut self, window: &Window) {
+        self.0.position = random_pos_on_background(window);
+    }
+
+    pub fn position(&self) -> Axes {
+        self.0.position
+    }
 }
 
 impl Render for Fruit {

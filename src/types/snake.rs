@@ -1,8 +1,13 @@
 use std::io;
 
 use crate::types::{
-    axes::Axes, direction::Direction, helpers::is_going_to_impact, palette::PaletteColors,
-    render::Render, snake_part::SnakePart, window::Window,
+    axes::Axes,
+    direction::Direction,
+    helpers::{get_next_position, is_going_to_impact},
+    palette::PaletteColors,
+    render::Render,
+    snake_part::SnakePart,
+    window::Window,
 };
 
 #[derive(Debug)]
@@ -53,8 +58,26 @@ impl Snake {
         Self { parts }
     }
 
-    pub fn update(&mut self, window: &Window) -> Result<(), ImpactError> {
+    pub fn update(
+        &mut self,
+        window: &Window,
+        grow: bool,
+        palette: &PaletteColors,
+    ) -> Result<(), ImpactError> {
         is_going_to_impact(self, window)?;
+
+        if grow {
+            let head = self.head_mut();
+            let mut new_head = head.clone();
+
+            head.square.color = palette.snake_body;
+
+            new_head.square.position = get_next_position(&new_head.square, &new_head.direction);
+
+            self.parts.insert(0, new_head);
+
+            return Ok(());
+        }
 
         for square in self.parts.iter_mut() {
             square.update_position(window);
@@ -77,15 +100,18 @@ impl Snake {
     }
 
     pub fn change_direction(&mut self, direction: Direction) -> bool {
-        self.parts
-            .first_mut()
-            .expect("the snake must have at least 1 square of lenght")
-            .change_direction(direction)
+        self.head_mut().change_direction(direction)
     }
 
     pub fn head(&self) -> &SnakePart {
         self.parts
             .first()
+            .expect("the snake must have at least 1 square of lenght")
+    }
+
+    pub fn head_mut(&mut self) -> &mut SnakePart {
+        self.parts
+            .first_mut()
             .expect("the snake must have at least 1 square of lenght")
     }
 }

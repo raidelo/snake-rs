@@ -4,7 +4,7 @@ use crossterm::{QueueableCommand, style::Color};
 
 use crate::types::{axes::Axes, render::Render, window::Window};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Square {
     pub position: Axes,
     pub color: Color,
