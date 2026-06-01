@@ -5,6 +5,10 @@ use crate::types::{
     snake_part::SnakePart, window::Window,
 };
 
+pub enum ImpactError {
+    BorderImpact,
+}
+
 pub struct Snake {
     pub parts: Vec<SnakePart>,
 }
@@ -52,7 +56,9 @@ impl Snake {
         Self { parts }
     }
 
-    pub fn update(&mut self, window: &Window) {
+    pub fn update(&mut self, window: &Window) -> Result<(), ImpactError> {
+        is_going_to_impact(self, window)?;
+
         for square in self.parts.iter_mut() {
             square.update_position(window);
         }
@@ -69,13 +75,21 @@ impl Snake {
 
             left = right;
         }
+
+        Ok(())
     }
 
     pub fn change_direction(&mut self, direction: Direction) -> bool {
         self.parts
-            .get_mut(0)
+            .first_mut()
             .expect("the snake must have at least 1 square of lenght")
             .change_direction(direction)
+    }
+
+    fn head(&self) -> &SnakePart {
+        self.parts
+            .first()
+            .expect("the snake must have at least 1 square of lenght")
     }
 }
 
@@ -86,5 +100,28 @@ impl Render for Snake {
         }
 
         Ok(())
+    }
+}
+
+fn is_going_to_impact(snake: &Snake, window: &Window) -> Result<(), ImpactError> {
+    if check_border_impact(snake, window) {
+        return Err(ImpactError::BorderImpact);
+    }
+
+    Ok(())
+}
+
+fn check_border_impact(snake: &Snake, window: &Window) -> bool {
+    let head = snake.head();
+    let pos = &head.square.position;
+
+    match head.direction {
+        Direction::Up => pos.y == window.bg_start.y,
+
+        Direction::Down => pos.y == window.bg_end.y - 1,
+
+        Direction::Left => pos.x == window.bg_start.x,
+
+        Direction::Right => pos.x == window.bg_end.x - 2,
     }
 }

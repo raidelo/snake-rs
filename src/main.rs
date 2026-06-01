@@ -103,10 +103,13 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
             window.set_background_color(&palette)?;
             window.draw_borders(&palette)?;
 
-            window.render(&fruit)?;
+            if let Err(impact) = snake.update(&window) {
+                todo!();
+            };
             window.render(&snake)?;
 
-            snake.update(&window);
+            window.render(&fruit)?;
+
             last_frame += frame_duration;
         }
 
