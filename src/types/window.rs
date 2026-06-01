@@ -18,7 +18,10 @@ impl Window {
             width,
             height,
             bg_start: Axes::new(2, 1),
-            bg_end: Axes::new(width - 2, height - 1),
+            bg_end: Axes::new(
+                width - { if width.is_multiple_of(2) { 2 } else { 3 } },
+                height - 1,
+            ),
         }
     }
 
@@ -79,13 +82,20 @@ impl Window {
                 .queue(crossterm::style::Print(&top_down))?;
         }
 
-        let block = "  ";
+        let block = " ";
+        let square = "  ";
+        let cond = !self.width.is_multiple_of(2);
+
         for i in 1..(self.height - 1) {
             stdout
                 .queue(crossterm::cursor::MoveTo(0, i))?
-                .queue(crossterm::style::Print(&block))?
-                .queue(crossterm::cursor::MoveTo(self.width - 2, i))?
-                .queue(crossterm::style::Print(&block))?;
+                .queue(crossterm::style::Print(&square))?
+                .queue(crossterm::cursor::MoveTo(self.bg_end.x, i))?
+                .queue(crossterm::style::Print(&square))?;
+
+            if cond {
+                stdout.queue(crossterm::style::Print(&block))?;
+            }
         }
 
         stdout.flush()
