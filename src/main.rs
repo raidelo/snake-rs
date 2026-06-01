@@ -65,8 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let _guard = RawModeGuard::new()?;
 
-    let (width, height) =
-        crossterm::terminal::size().map(|(width, height)| (make_width_even(width), height))?;
+    let (width, height) = crossterm::terminal::size()?;
 
     let mut window = Window::new(width, height);
     window.hide_cursor()?;
@@ -92,12 +91,11 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
     let frame_duration = Duration::from_millis(speed);
     let mut last_frame = Instant::now();
 
-    window.clear_screen()?;
-
     loop {
         let now = Instant::now();
         if (now - last_frame) >= frame_duration {
-            window.draw_background(&palette)?;
+            window.set_background_color(&palette)?;
+            window.draw_borders(&palette)?;
 
             window.render(&fruit)?;
             window.render(&snake)?;
