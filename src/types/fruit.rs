@@ -2,8 +2,10 @@ use std::io;
 
 use crate::{
     constants::SQUARE_GLYPH,
-    helpers::random_pos_on_background,
-    types::{axes::Axes, palette::PaletteColors, render::Render, square::Square, window::Window},
+    types::{
+        axes::Axes, helpers::random_pos_on_background, palette::PaletteColors, render::Render,
+        square::Square, window::Window,
+    },
 };
 
 #[derive(Debug)]

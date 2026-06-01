@@ -1,6 +1,7 @@
 mod axes;
 mod direction;
 mod fruit;
+mod helpers;
 mod palette;
 mod render;
 mod snake;

@@ -1,8 +1,8 @@
 use std::io;
 
 use crate::types::{
-    axes::Axes, direction::Direction, palette::PaletteColors, render::Render,
-    snake_part::SnakePart, window::Window,
+    axes::Axes, direction::Direction, helpers::is_going_to_impact, palette::PaletteColors,
+    render::Render, snake_part::SnakePart, window::Window,
 };
 
 #[derive(Debug)]
@@ -83,7 +83,7 @@ impl Snake {
             .change_direction(direction)
     }
 
-    fn head(&self) -> &SnakePart {
+    pub fn head(&self) -> &SnakePart {
         self.parts
             .first()
             .expect("the snake must have at least 1 square of lenght")
@@ -98,57 +98,4 @@ impl Render for Snake {
 
         Ok(())
     }
-}
-
-fn is_going_to_impact(snake: &Snake, window: &Window) -> Result<(), ImpactError> {
-    if check_border_impact(snake, window) {
-        return Err(ImpactError::BorderImpact);
-    }
-
-    if check_body_impact(snake) {
-        return Err(ImpactError::BodyImpact);
-    }
-
-    Ok(())
-}
-
-fn check_border_impact(snake: &Snake, window: &Window) -> bool {
-    let head = snake.head();
-    let pos = &head.square.position;
-
-    match head.direction {
-        Direction::Up => pos.y == window.bg_start.y,
-
-        Direction::Down => pos.y == window.bg_end.y - 1,
-
-        Direction::Left => pos.x == window.bg_start.x,
-
-        Direction::Right => pos.x == window.bg_end.x - 2,
-    }
-}
-
-fn check_body_impact(snake: &Snake) -> bool {
-    let head_next_pos: Axes = get_next_position(snake.head());
-
-    let mut part_next_pos: Axes;
-    for part in snake.parts.iter().skip(1) {
-        part_next_pos = get_next_position(part);
-
-        if head_next_pos == part_next_pos {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn get_next_position(snake_part: &SnakePart) -> Axes {
-    let mut pos = snake_part.square.position;
-    match snake_part.direction {
-        Direction::Up => pos.y -= 1,
-        Direction::Down => pos.y += 1,
-        Direction::Left => pos.x -= 2,
-        Direction::Right => pos.x += 2,
-    }
-    pos
 }
