@@ -9,7 +9,6 @@ use crossterm::event::{Event, KeyCode};
 use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
 use tokio::time::Instant;
 
-use crate::helpers::random_pos_on_background;
 use crate::types::{Axes, Direction, Fruit, PaletteStyle, Snake, Window};
 
 #[tokio::main]
@@ -84,7 +83,7 @@ async fn display_window(mut rx: Receiver<Event>) -> Result<(), io::Error> {
         &palette,
     );
 
-    let fruit = Fruit::new(random_pos_on_background(&window), &palette);
+    let fruit = Fruit::random_generate(&window, &palette);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);

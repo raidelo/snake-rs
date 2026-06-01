@@ -2,7 +2,10 @@ use std::io::{self, Write, stdout};
 
 use crossterm::{ExecutableCommand, QueueableCommand};
 
-use crate::types::{Axes, palette::PaletteColors, render::Render};
+use crate::{
+    constants::SQUARE_GLYPH,
+    types::{Axes, palette::PaletteColors, render::Render},
+};
 
 #[derive(Debug)]
 pub struct Window {
@@ -63,14 +66,13 @@ impl Window {
 
         stdout.queue(crossterm::style::SetBackgroundColor(palette.borders))?;
 
-        let top_down = String::from(" ").repeat((self.width).into());
+        let top_down = String::from(SQUARE_GLYPH).repeat((self.width).into());
         for i in [0, self.height - 1] {
             stdout
                 .queue(crossterm::cursor::MoveTo(0, i))?
                 .queue(crossterm::style::Print(&top_down))?;
         }
 
-        let block = " ";
         let square = "  ";
         let cond = !self.width.is_multiple_of(2);
 
@@ -82,7 +84,7 @@ impl Window {
                 .queue(crossterm::style::Print(&square))?;
 
             if cond {
-                stdout.queue(crossterm::style::Print(&block))?;
+                stdout.queue(crossterm::style::Print(&SQUARE_GLYPH))?;
             }
         }
 
