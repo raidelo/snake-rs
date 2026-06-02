@@ -1,7 +1,11 @@
-use std::io;
+use std::{
+    io,
+    time::{Duration, Instant},
+};
 
 use crate::{
     constants::INITIAL_SNAKE_LENGTH,
+    constants::INVINCIBLE_TIME,
     types::{
         axes::Axes,
         direction::Direction,
@@ -24,6 +28,7 @@ pub struct Snake {
     pub parts: Vec<SnakePart>,
     pub palette: SnakePalette,
     pub lives: u8,
+    invincible_until: Option<Instant>,
 }
 
 impl Snake {
@@ -65,16 +70,21 @@ impl Snake {
             parts,
             palette,
             lives: initial_lives,
+            invincible_until: None,
         }
     }
 
     pub fn update(&mut self, window: &Window, grow: bool) -> Result<(), ImpactError> {
-        if let Err(impact) = is_going_to_impact(self, window) {
+        if let Err(impact) = is_going_to_impact(self, window)
+            && !self.is_invincible()
+        {
             if self.lives == 1 {
                 return Err(impact);
             }
 
             self.lives -= 1;
+            self.invincible_until =
+                Some(Instant::now() + Duration::from_millis(INVINCIBLE_TIME.into()));
         };
 
         if grow {
@@ -130,6 +140,17 @@ impl Snake {
 
     pub fn score(&self) -> usize {
         self.parts.len() - INITIAL_SNAKE_LENGTH as usize
+    }
+
+    fn is_invincible(&mut self) -> bool {
+        match self.invincible_until {
+            Some(until) if until > Instant::now() => true,
+            Some(_) => {
+                self.invincible_until = None;
+                false
+            }
+            None => false,
+        }
     }
 }
 
