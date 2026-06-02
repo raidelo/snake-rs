@@ -105,7 +105,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
 
     let mut window = Window::new(width, height);
 
-    let palette = PaletteStyle::Organic.palette();
+    let palette = PaletteStyle::OrganicV1.palette();
 
     let mut snake = Snake::new(
         Axes::new(make_even_by_substracting(width / 4), height / 2),
