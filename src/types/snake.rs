@@ -4,7 +4,7 @@ use crate::types::{
     axes::Axes,
     direction::Direction,
     helpers::{get_next_position, is_going_to_impact},
-    palette::PaletteColors,
+    palette::SnakePalette,
     render::Render,
     snake_part::SnakePart,
     window::Window,
@@ -19,6 +19,7 @@ pub enum ImpactError {
 #[derive(Debug)]
 pub struct Snake {
     pub parts: Vec<SnakePart>,
+    pub palette: SnakePalette,
 }
 
 impl Snake {
@@ -26,9 +27,9 @@ impl Snake {
         position: Axes,
         direction: Direction,
         initial_length: u16,
-        palette: &PaletteColors,
+        palette: SnakePalette,
     ) -> Self {
-        let mut parts = vec![SnakePart::new(position, direction, palette.snake_head)];
+        let mut parts = vec![SnakePart::new(position, direction, palette.head)];
 
         for i in 1..initial_length {
             parts.push(SnakePart::new(
@@ -51,26 +52,23 @@ impl Snake {
                     },
                 },
                 direction,
-                palette.snake_body,
+                palette.body,
             ));
         }
 
-        Self { parts }
+        Self { parts, palette }
     }
 
-    pub fn update(
-        &mut self,
-        window: &Window,
-        grow: bool,
-        palette: &PaletteColors,
-    ) -> Result<(), ImpactError> {
+    pub fn update(&mut self, window: &Window, grow: bool) -> Result<(), ImpactError> {
         is_going_to_impact(self, window)?;
 
         if grow {
+            let color = self.palette.body;
+
             let head = self.head_mut();
             let mut new_head = head.clone();
 
-            head.square.color = palette.snake_body;
+            head.square.color = color;
 
             new_head.square.position = get_next_position(&new_head.square, &new_head.direction);
 

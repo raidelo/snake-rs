@@ -318,6 +318,14 @@ impl PaletteColors {
             b: 0xff,
         },
     };
+
+    pub fn unpack(self) -> (WindowPalette, SnakePalette, Color) {
+        (
+            WindowPalette::new(self.background, self.borders),
+            SnakePalette::new(self.snake_head, self.snake_body),
+            self.food,
+        )
+    }
 }
 
 #[allow(unused)]
@@ -351,5 +359,44 @@ impl PaletteStyle {
             Self::Nord => PaletteColors::NORD,
             Self::RetroCga => PaletteColors::RETRO_CGA,
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct WindowPalette {
+    pub background: Color,
+    pub borders: Color,
+}
+
+impl WindowPalette {
+    pub fn new(background: Color, borders: Color) -> Self {
+        Self {
+            background,
+            borders,
+        }
+    }
+}
+
+impl From<PaletteColors> for WindowPalette {
+    fn from(value: PaletteColors) -> Self {
+        Self::new(value.background, value.borders)
+    }
+}
+
+#[derive(Debug)]
+pub struct SnakePalette {
+    pub body: Color,
+    pub head: Color,
+}
+
+impl SnakePalette {
+    pub fn new(head: Color, body: Color) -> Self {
+        Self { head, body }
+    }
+}
+
+impl From<PaletteColors> for SnakePalette {
+    fn from(value: PaletteColors) -> Self {
+        Self::new(value.snake_head, value.snake_body)
     }
 }

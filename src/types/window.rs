@@ -4,7 +4,7 @@ use crossterm::{ExecutableCommand, QueueableCommand};
 
 use crate::{
     constants::SQUARE_GLYPH,
-    types::{Axes, palette::PaletteColors, render::Render},
+    types::{Axes, palette::WindowPalette, render::Render},
 };
 
 #[derive(Debug)]
@@ -13,10 +13,11 @@ pub struct Window {
     pub height: u16,
     pub bg_start: Axes,
     pub bg_end: Axes,
+    pub palette: WindowPalette,
 }
 
 impl Window {
-    pub fn new(width: u16, height: u16) -> Self {
+    pub fn new(width: u16, height: u16, palette: WindowPalette) -> Self {
         Self {
             width,
             height,
@@ -25,6 +26,7 @@ impl Window {
                 width - { if width.is_multiple_of(2) { 2 } else { 3 } },
                 height - 1,
             ),
+            palette,
         }
     }
 
@@ -46,15 +48,17 @@ impl Window {
         Ok(())
     }
 
-    pub fn set_background_color(&self, palette: &PaletteColors) -> Result<(), io::Error> {
-        stdout().execute(crossterm::style::SetBackgroundColor(palette.background))?;
+    pub fn set_background_color(&self) -> Result<(), io::Error> {
+        stdout().execute(crossterm::style::SetBackgroundColor(
+            self.palette.background,
+        ))?;
         self.clear_screen()
     }
 
-    pub fn draw_borders(&self, palette: &PaletteColors) -> Result<(), io::Error> {
+    pub fn draw_borders(&self) -> Result<(), io::Error> {
         let mut stdout = stdout();
 
-        stdout.queue(crossterm::style::SetBackgroundColor(palette.borders))?;
+        stdout.queue(crossterm::style::SetBackgroundColor(self.palette.borders))?;
 
         let top_down = String::from(SQUARE_GLYPH).repeat((self.width).into());
         for i in [0, self.height - 1] {

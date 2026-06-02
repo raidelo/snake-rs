@@ -1,10 +1,12 @@
 use std::io;
 
+use crossterm::style::Color;
+
 use crate::{
     constants::SQUARE_GLYPH,
     types::{
-        axes::Axes, helpers::random_pos_on_background, palette::PaletteColors, render::Render,
-        square::Square, window::Window,
+        axes::Axes, helpers::random_pos_on_background, render::Render, square::Square,
+        window::Window,
     },
 };
 
@@ -12,11 +14,11 @@ use crate::{
 pub struct Fruit(Square);
 
 impl Fruit {
-    pub fn new(position: Axes, color: &PaletteColors) -> Self {
-        Self(Square::new(position, color.food, SQUARE_GLYPH))
+    pub fn new(position: Axes, color: Color) -> Self {
+        Self(Square::new(position, color, SQUARE_GLYPH))
     }
 
-    pub fn random_generate(window: &Window, color: &PaletteColors) -> Self {
+    pub fn random_generate(window: &Window, color: Color) -> Self {
         Self::new(random_pos_on_background(window), color)
     }
 

@@ -101,21 +101,22 @@ async fn display_window(rx: Receiver<Event>) -> Result<(), io::Error> {
 }
 
 async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
+    let style = PaletteStyle::OrganicV1;
+    let (window_palette, snake_palette, food_color) = style.palette().unpack();
+
     let (width, height) = crossterm::terminal::size()?;
 
-    let mut window = Window::new(width, height);
-
-    let palette = PaletteStyle::OrganicV1.palette();
+    let mut window = Window::new(width, height, window_palette);
 
     let mut snake = Snake::new(
         Axes::new(make_even_by_substracting(width / 4), height / 2),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
-        &palette,
+        snake_palette,
     );
     let mut grow: bool;
 
-    let mut fruit = Fruit::random_generate(&window, &palette);
+    let mut fruit = Fruit::random_generate(&window, food_color);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
@@ -124,8 +125,8 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     loop {
         let now = Instant::now();
         if (now - last_frame) >= frame_duration {
-            window.set_background_color(&palette)?;
-            window.draw_borders(&palette)?;
+            window.set_background_color()?;
+            window.draw_borders()?;
 
             grow = if is_going_to_eat_fruit(&snake, &fruit) {
                 fruit.regenerate(&window);
@@ -134,7 +135,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
                 false
             };
 
-            if let Err(imp) = snake.update(&window, grow, &palette) {
+            if let Err(imp) = snake.update(&window, grow) {
                 break Err(imp.into());
             };
             window.render(&snake)?;
