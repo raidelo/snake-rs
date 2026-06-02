@@ -3,13 +3,12 @@ mod helpers;
 mod types;
 
 use std::io::{self, Write, stdout};
-use std::time::Duration;
 
 use crossterm::QueueableCommand;
 use crossterm::event::{Event, EventStream, KeyCode};
 use futures::StreamExt;
 use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
-use tokio::time::Instant;
+use tokio::time::{Duration, interval};
 
 use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
 use crate::types::{
@@ -87,30 +86,12 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
-    let mut last_frame = Instant::now();
+
+    let mut interval = interval(frame_duration);
+    interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
 
     loop {
-        let now = Instant::now();
-        if (now - last_frame) >= frame_duration {
-            window.set_background_color()?;
-            window.draw_borders()?;
-
-            grow = if is_going_to_eat_fruit(&snake, &fruit) {
-                fruit.regenerate(&window);
-                true
-            } else {
-                false
-            };
-
-            if let Err(imp) = snake.update(&window, grow) {
-                break Err(imp.into());
-            };
-            window.render(&snake)?;
-
-            window.render(&fruit)?;
-
-            last_frame += frame_duration;
-        }
+        interval.tick().await;
 
         match rx.try_recv() {
             Ok(event) => match event {
@@ -129,7 +110,8 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
                             snake.change_direction(Direction::Right);
                         }
                         KeyCode::Esc | KeyCode::Char('q') => break Ok(()),
-                        _ => continue,
+
+                        _ => (),
                     };
                 }
 
@@ -141,6 +123,23 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
             Err(TryRecvError::Empty) => (),
             Err(TryRecvError::Disconnected) => break Ok(()),
         };
+
+        window.set_background_color()?;
+        window.draw_borders()?;
+
+        grow = if is_going_to_eat_fruit(&snake, &fruit) {
+            fruit.regenerate(&window);
+            true
+        } else {
+            false
+        };
+
+        if let Err(imp) = snake.update(&window, grow) {
+            break Err(imp.into());
+        };
+        window.render(&snake)?;
+
+        window.render(&fruit)?;
     }
 }
 
