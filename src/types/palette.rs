@@ -1,6 +1,5 @@
 use crossterm::style::Color;
 
-#[allow(unused)]
 #[derive(Debug)]
 pub struct PaletteColors {
     pub background: Color,
@@ -39,8 +38,8 @@ impl PaletteColors {
             b: 0x0f,
         },
         score_text: Color::Rgb {
-            r: 0x9b,
-            g: 0xbc,
+            r: 0x0f,
+            g: 0x38,
             b: 0x0f,
         },
     };
