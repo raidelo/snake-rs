@@ -23,6 +23,7 @@ pub enum ImpactError {
 pub struct Snake {
     pub parts: Vec<SnakePart>,
     pub palette: SnakePalette,
+    pub lives: u8,
 }
 
 impl Snake {
@@ -30,6 +31,7 @@ impl Snake {
         position: Axes,
         direction: Direction,
         initial_length: u16,
+        initial_lives: u8,
         palette: SnakePalette,
     ) -> Self {
         let mut parts = vec![SnakePart::new(position, direction, palette.head)];
@@ -59,11 +61,21 @@ impl Snake {
             ));
         }
 
-        Self { parts, palette }
+        Self {
+            parts,
+            palette,
+            lives: initial_lives,
+        }
     }
 
     pub fn update(&mut self, window: &Window, grow: bool) -> Result<(), ImpactError> {
-        is_going_to_impact(self, window)?;
+        if let Err(impact) = is_going_to_impact(self, window) {
+            if self.lives == 1 {
+                return Err(impact);
+            }
+
+            self.lives -= 1;
+        };
 
         if grow {
             let color = self.palette.body;

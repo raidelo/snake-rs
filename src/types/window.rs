@@ -3,7 +3,7 @@ use std::io::{self, Write, stdout};
 use crossterm::{ExecutableCommand, QueueableCommand};
 
 use crate::{
-    constants::SQUARE_GLYPH,
+    constants::{HEART_GLYPH, MAX_LIVES_IN_BORDER, SQUARE_GLYPH},
     types::{Axes, palette::WindowPalette, render::Render},
 };
 
@@ -55,7 +55,7 @@ impl Window {
         self.clear_screen()
     }
 
-    pub fn draw_borders(&self, score: usize) -> Result<(), io::Error> {
+    pub fn draw_borders(&self, score: usize, lives: u8) -> Result<(), io::Error> {
         let mut stdout = stdout();
 
         stdout.queue(crossterm::style::SetBackgroundColor(self.palette.borders))?;
@@ -65,8 +65,14 @@ impl Window {
             .queue(crossterm::cursor::MoveTo(0, self.height - 1))?
             .queue(crossterm::style::Print(&horizontal_down))?;
 
-        let score_text = format!(" Score: {:^5} ", score);
-        let score_len = score_text.len() as u16;
+        let hearts = format!("{HEART_GLYPH} ").repeat(if lives <= MAX_LIVES_IN_BORDER {
+            lives
+        } else {
+            MAX_LIVES_IN_BORDER
+        } as usize);
+
+        let score_text = format!(" Score: {:^5} | Lives: {}x {} ", score, hearts, lives);
+        let score_len = score_text.chars().count() as u16;
         let side_len = (self.width - score_len) / 2;
         let side = String::from(SQUARE_GLYPH).repeat(side_len.into());
 
@@ -91,6 +97,10 @@ impl Window {
             ))?
             .queue(crossterm::style::SetBackgroundColor(self.palette.borders))?
             .queue(crossterm::style::Print(&side))?;
+
+        if !(self.width - score_len).is_multiple_of(2) {
+            stdout.queue(crossterm::style::Print(&SQUARE_GLYPH))?;
+        }
 
         let square = "  ";
         let cond = !self.width.is_multiple_of(2);

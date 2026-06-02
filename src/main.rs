@@ -78,6 +78,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         Axes::new(make_even_by_substracting(width / 4), height / 2),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
+        constants::INITIAL_SNAKE_LIVES,
         snake_palette,
     );
     let mut grow: bool;
@@ -125,7 +126,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         };
 
         window.set_background_color()?;
-        window.draw_borders(snake.score())?;
+        window.draw_borders(snake.score(), snake.lives)?;
 
         grow = if is_going_to_eat_fruit(&snake, &fruit) {
             fruit.regenerate(&window);
