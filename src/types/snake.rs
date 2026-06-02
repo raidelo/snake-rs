@@ -1,13 +1,16 @@
 use std::io;
 
-use crate::types::{
-    axes::Axes,
-    direction::Direction,
-    helpers::{get_next_position, is_going_to_impact},
-    palette::SnakePalette,
-    render::Render,
-    snake_part::SnakePart,
-    window::Window,
+use crate::{
+    constants::INITIAL_SNAKE_LENGTH,
+    types::{
+        axes::Axes,
+        direction::Direction,
+        helpers::{get_next_position, is_going_to_impact},
+        palette::SnakePalette,
+        render::Render,
+        snake_part::SnakePart,
+        window::Window,
+    },
 };
 
 #[derive(Debug)]
@@ -111,6 +114,10 @@ impl Snake {
         self.parts
             .first_mut()
             .expect("the snake must have at least 1 square of lenght")
+    }
+
+    pub fn score(&self) -> usize {
+        self.parts.len() - INITIAL_SNAKE_LENGTH as usize
     }
 }
 

@@ -8,6 +8,7 @@ pub struct PaletteColors {
     pub snake_head: Color,
     pub food: Color,
     pub borders: Color,
+    pub score_text: Color,
 }
 
 impl PaletteColors {
@@ -35,6 +36,11 @@ impl PaletteColors {
         borders: Color::Rgb {
             r: 0x0f,
             g: 0x38,
+            b: 0x0f,
+        },
+        score_text: Color::Rgb {
+            r: 0x9b,
+            g: 0xbc,
             b: 0x0f,
         },
     };
@@ -65,6 +71,11 @@ impl PaletteColors {
             g: 0x2f,
             b: 0xff,
         },
+        score_text: Color::Rgb {
+            r: 0xff,
+            g: 0xe0,
+            b: 0x00,
+        },
     };
 
     pub const NEON_V2: Self = Self {
@@ -92,6 +103,11 @@ impl PaletteColors {
             r: 0xff,
             g: 0xff,
             b: 0x00,
+        },
+        score_text: Color::Rgb {
+            r: 0x00,
+            g: 0xff,
+            b: 0xcc,
         },
     };
 
@@ -121,6 +137,11 @@ impl PaletteColors {
             g: 0x6e,
             b: 0x3c,
         },
+        score_text: Color::Rgb {
+            r: 0xd4,
+            g: 0xe8,
+            b: 0x57,
+        },
     };
 
     pub const ORGANIC_V2: Self = Self {
@@ -148,6 +169,11 @@ impl PaletteColors {
             r: 0x83,
             g: 0xa5,
             b: 0x98,
+        },
+        score_text: Color::Rgb {
+            r: 0xb8,
+            g: 0xbb,
+            b: 0x26,
         },
     };
 
@@ -177,6 +203,11 @@ impl PaletteColors {
             g: 0x93,
             b: 0xf9,
         },
+        score_text: Color::Rgb {
+            r: 0xf8,
+            g: 0xf8,
+            b: 0xf2,
+        },
     };
 
     pub const OCEAN: Self = Self {
@@ -205,6 +236,11 @@ impl PaletteColors {
             g: 0x55,
             b: 0x88,
         },
+        score_text: Color::Rgb {
+            r: 0xff,
+            g: 0xff,
+            b: 0xff,
+        },
     };
 
     pub const MATRIX: Self = Self {
@@ -231,6 +267,11 @@ impl PaletteColors {
         borders: Color::Rgb {
             r: 0x00,
             g: 0x66,
+            b: 0x00,
+        },
+        score_text: Color::Rgb {
+            r: 0x00,
+            g: 0xff,
             b: 0x00,
         },
     };
@@ -261,6 +302,11 @@ impl PaletteColors {
             g: 0x44,
             b: 0x00,
         },
+        score_text: Color::Rgb {
+            r: 0xff,
+            g: 0xd7,
+            b: 0x00,
+        },
     };
 
     pub const NORD: Self = Self {
@@ -288,6 +334,11 @@ impl PaletteColors {
             r: 0x81,
             g: 0xa1,
             b: 0xc1,
+        },
+        score_text: Color::Rgb {
+            r: 0xe5,
+            g: 0xe9,
+            b: 0xf0,
         },
     };
 
@@ -317,11 +368,16 @@ impl PaletteColors {
             g: 0xff,
             b: 0xff,
         },
+        score_text: Color::Rgb {
+            r: 0xaa,
+            g: 0x00,
+            b: 0xaa,
+        },
     };
 
     pub fn unpack(self) -> (WindowPalette, SnakePalette, Color) {
         (
-            WindowPalette::new(self.background, self.borders),
+            WindowPalette::new(self.background, self.borders, self.score_text),
             SnakePalette::new(self.snake_head, self.snake_body),
             self.food,
         )
@@ -366,20 +422,22 @@ impl PaletteStyle {
 pub struct WindowPalette {
     pub background: Color,
     pub borders: Color,
+    pub score_text: Color,
 }
 
 impl WindowPalette {
-    pub fn new(background: Color, borders: Color) -> Self {
+    pub fn new(background: Color, borders: Color, score_text: Color) -> Self {
         Self {
             background,
             borders,
+            score_text,
         }
     }
 }
 
 impl From<PaletteColors> for WindowPalette {
     fn from(value: PaletteColors) -> Self {
-        Self::new(value.background, value.borders)
+        Self::new(value.background, value.borders, value.score_text)
     }
 }
 

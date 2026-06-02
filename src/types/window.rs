@@ -55,17 +55,42 @@ impl Window {
         self.clear_screen()
     }
 
-    pub fn draw_borders(&self) -> Result<(), io::Error> {
+    pub fn draw_borders(&self, score: usize) -> Result<(), io::Error> {
         let mut stdout = stdout();
 
         stdout.queue(crossterm::style::SetBackgroundColor(self.palette.borders))?;
 
-        let top_down = String::from(SQUARE_GLYPH).repeat((self.width).into());
-        for i in [0, self.height - 1] {
-            stdout
-                .queue(crossterm::cursor::MoveTo(0, i))?
-                .queue(crossterm::style::Print(&top_down))?;
-        }
+        let horizontal_down = String::from(SQUARE_GLYPH).repeat(self.width.into());
+        stdout
+            .queue(crossterm::cursor::MoveTo(0, self.height - 1))?
+            .queue(crossterm::style::Print(&horizontal_down))?;
+
+        let score_text = format!(" Score: {:^5} ", score);
+        let score_len = score_text.len() as u16;
+        let side_len = (self.width - score_len) / 2;
+        let side = String::from(SQUARE_GLYPH).repeat(side_len.into());
+
+        stdout
+            .queue(crossterm::cursor::MoveTo(0, 0))?
+            .queue(crossterm::style::Print(&side))?
+            .queue(crossterm::style::SetBackgroundColor(
+                self.palette.background,
+            ))?
+            .queue(crossterm::style::SetForegroundColor(
+                self.palette.score_text,
+            ))?
+            .queue(crossterm::style::SetAttribute(
+                crossterm::style::Attribute::Bold,
+            ))?
+            .queue(crossterm::style::Print(&score_text))?
+            .queue(crossterm::style::SetAttribute(
+                crossterm::style::Attribute::Reset,
+            ))?
+            .queue(crossterm::style::SetForegroundColor(
+                crossterm::style::Color::Reset,
+            ))?
+            .queue(crossterm::style::SetBackgroundColor(self.palette.borders))?
+            .queue(crossterm::style::Print(&side))?;
 
         let square = "  ";
         let cond = !self.width.is_multiple_of(2);
