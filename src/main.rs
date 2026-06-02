@@ -171,7 +171,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
             },
 
             Err(TryRecvError::Empty) => (),
-            Err(TryRecvError::Disconnected) => break Ok(()),
+            Err(TryRecvError::Disconnected) => break Ok(()), // TODO: search if this is unreachable
         };
     }
 }
