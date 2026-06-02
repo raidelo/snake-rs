@@ -6,8 +6,9 @@ use std::io::{self, Write, stdout};
 use std::time::Duration;
 
 use crossterm::QueueableCommand;
-use crossterm::event::{Event, KeyCode};
-use tokio::sync::mpsc::{Receiver, channel, error::TryRecvError};
+use crossterm::event::{Event, EventStream, KeyCode};
+use futures::StreamExt;
+use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::Instant;
 
 use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
@@ -26,77 +27,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (tx, rx) = channel::<Event>(100);
 
-    let handle = tokio::spawn(display_window(rx));
-
-    while let Ok(event_occurred) = tokio::task::spawn_blocking(|| {
-        crossterm::event::poll(Duration::from_millis(constants::POLL_TIME))
-    })
-    .await?
-    {
-        if handle.is_finished() {
-            break;
-        }
-
-        if !event_occurred {
-            continue;
-        }
-
-        if let Ok(event) = tokio::task::spawn_blocking(crossterm::event::read).await? {
-            if tx.send(event).await.is_err() {
-                break;
-            };
-        } else {
-            continue;
-        };
-    }
-
-    match handle.await {
-        Ok(Ok(())) => Ok(()),
-        Ok(Err(e)) => Err(Box::new(e)),
-        Err(err) => {
-            if let Ok(panic) = err.try_into_panic() {
-                let msg = panic
-                    .downcast_ref::<&str>()
-                    .map(|s| s.to_string())
-                    .or_else(|| panic.downcast_ref::<String>().cloned())
-                    .unwrap_or_else(|| "pánico desconocido".to_string());
-                Err(Box::new(io::Error::other(msg)))
-            } else {
-                Err(Box::new(io::Error::other(
-                    "tarea cancelada inesperadamente",
-                )))
-            }
-        }
-    }
-    .map_err(|err| err.into())
-}
-
-async fn display_window(rx: Receiver<Event>) -> Result<(), io::Error> {
     setup_terminal()?;
 
+    let listener_handler = tokio::task::spawn(keyboard_listener(tx));
+
     let result = run_game(rx).await;
+    listener_handler.abort();
 
     reset_terminal()?;
 
-    if let Err(err) = result {
-        match err {
-            GameError::ImpactError(_) => {
-                stdout()
-                    .queue(crossterm::style::SetAttribute(
-                        crossterm::style::Attribute::Bold,
-                    ))?
-                    .queue(crossterm::style::Print("You lost\n"))?
-                    .queue(crossterm::style::SetAttribute(
-                        crossterm::style::Attribute::Reset,
-                    ))?
-                    .flush()?;
-            }
-            GameError::IOError(err) => {
-                return Err(err);
-            }
-        }
-    };
+    match result {
+        Ok(()) => Ok(()),
 
+        Err(GameError::ImpactError(_)) => {
+            stdout()
+                .queue(crossterm::style::SetAttribute(
+                    crossterm::style::Attribute::Bold,
+                ))?
+                .queue(crossterm::style::Print("You lost\n"))?
+                .queue(crossterm::style::SetAttribute(
+                    crossterm::style::Attribute::Reset,
+                ))?
+                .flush()?;
+            Ok(())
+        }
+
+        Err(GameError::IOError(err)) => Err(Box::new(err) as Box<dyn std::error::Error>),
+    }
+}
+
+async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
+    let mut reader = EventStream::new();
+
+    while let Some(event) = reader.next().await {
+        if tx.send(event?).await.is_err() {
+            break;
+        };
+    }
     Ok(())
 }
 
