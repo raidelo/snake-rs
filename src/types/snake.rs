@@ -85,6 +85,8 @@ impl Snake {
     }
 
     pub fn update(&mut self, window: &Window, grow: bool) -> Result<(), ImpactError> {
+        self.unset_invincibility_if_expired();
+
         if let Err(impact) = is_going_to_impact(self, window)
             && !self.is_invincible()
         {
@@ -153,15 +155,17 @@ impl Snake {
     }
 
     pub fn is_invincible(&mut self) -> bool {
-        match self.invincible_until {
-            Some(until) if until > Instant::now() => true,
-            Some(_) => {
-                self.invincible_until = None;
-                self.blink_state = BlinkState::Normal;
-                self.apply_colors(self.palette.head, self.palette.body);
-                false
-            }
-            None => false,
+        self.invincible_until
+            .is_some_and(|until| until > Instant::now())
+    }
+
+    fn unset_invincibility_if_expired(&mut self) {
+        if let Some(until) = self.invincible_until
+            && until <= Instant::now()
+        {
+            self.invincible_until = None;
+            self.blink_state = BlinkState::Normal;
+            self.apply_colors(self.palette.head, self.palette.body);
         }
     }
 
