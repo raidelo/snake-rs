@@ -87,7 +87,7 @@ impl Snake {
     pub fn update(&mut self, window: &Window, grow: bool) -> Result<(), ImpactError> {
         self.unset_invincibility_if_expired();
 
-        if let Err(impact) = is_going_to_impact(self, window)
+        if let Some(impact) = is_going_to_impact(self, window)
             && !self.is_invincible()
         {
             if self.lives == 1 {

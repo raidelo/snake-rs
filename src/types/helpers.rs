@@ -10,16 +10,16 @@ pub fn random_pos_on_background(window: &Window) -> Axes {
     )
 }
 
-pub fn is_going_to_impact(snake: &Snake, window: &Window) -> Result<(), ImpactError> {
+pub fn is_going_to_impact(snake: &Snake, window: &Window) -> Option<ImpactError> {
     if check_border_impact(snake, window) {
-        return Err(ImpactError::BorderImpact);
+        return Some(ImpactError::BorderImpact);
     }
 
     if check_body_impact(snake) {
-        return Err(ImpactError::BodyImpact);
+        return Some(ImpactError::BodyImpact);
     }
 
-    Ok(())
+    None
 }
 
 pub fn check_border_impact(snake: &Snake, window: &Window) -> bool {
