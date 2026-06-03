@@ -91,6 +91,8 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     let mut interval = interval(frame_duration);
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
 
+    let mut stdout = stdout();
+
     loop {
         interval.tick().await;
 
@@ -148,6 +150,8 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         window.render(&snake)?;
 
         window.render(&fruit)?;
+
+        stdout.flush()?;
     }
 }
 

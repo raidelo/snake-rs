@@ -1,4 +1,4 @@
-use std::io::{self, Write, stdout};
+use std::io::{self, stdout};
 
 use crossterm::{QueueableCommand, style::Color};
 
@@ -29,7 +29,7 @@ impl Render for Square {
             .queue(crossterm::style::Print(format!(
                 "{}{}",
                 self.glyph, self.glyph
-            )))?
-            .flush()
+            )))?;
+        Ok(())
     }
 }

@@ -1,6 +1,6 @@
-use std::io::{self, Write, stdout};
+use std::io::{self, stdout};
 
-use crossterm::{ExecutableCommand, QueueableCommand};
+use crossterm::QueueableCommand;
 
 use crate::{
     constants::{HEART_GLYPH, MAX_LIVES_IN_BORDER, SQUARE_GLYPH},
@@ -42,14 +42,14 @@ impl Window {
     }
 
     pub fn clear_screen(&self) -> Result<(), io::Error> {
-        stdout().execute(crossterm::terminal::Clear(
+        stdout().queue(crossterm::terminal::Clear(
             crossterm::terminal::ClearType::All,
         ))?;
         Ok(())
     }
 
     pub fn set_background_color(&self) -> Result<(), io::Error> {
-        stdout().execute(crossterm::style::SetBackgroundColor(
+        stdout().queue(crossterm::style::SetBackgroundColor(
             self.palette.background,
         ))?;
         self.clear_screen()
@@ -117,6 +117,6 @@ impl Window {
             }
         }
 
-        stdout.flush()
+        Ok(())
     }
 }
