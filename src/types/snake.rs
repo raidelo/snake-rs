@@ -3,6 +3,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use crossterm::style::Color;
+
 use crate::{
     constants::INITIAL_SNAKE_LENGTH,
     constants::INVINCIBLE_TIME,
@@ -24,11 +26,18 @@ pub enum ImpactError {
 }
 
 #[derive(Debug)]
+pub enum BlinkState {
+    Normal,
+    Blinking,
+}
+
+#[derive(Debug)]
 pub struct Snake {
     pub parts: Vec<SnakePart>,
     pub palette: SnakePalette,
     pub lives: u8,
     invincible_until: Option<Instant>,
+    blink_state: BlinkState,
 }
 
 impl Snake {
@@ -71,6 +80,7 @@ impl Snake {
             palette,
             lives: initial_lives,
             invincible_until: None,
+            blink_state: BlinkState::Normal,
         }
     }
 
@@ -142,14 +152,39 @@ impl Snake {
         self.parts.len() - INITIAL_SNAKE_LENGTH as usize
     }
 
-    fn is_invincible(&mut self) -> bool {
+    pub fn is_invincible(&mut self) -> bool {
         match self.invincible_until {
             Some(until) if until > Instant::now() => true,
             Some(_) => {
                 self.invincible_until = None;
+                self.blink_state = BlinkState::Normal;
+                self.apply_colors(self.palette.head, self.palette.body);
                 false
             }
             None => false,
+        }
+    }
+
+    pub fn blink(&mut self) {
+        let (head, body) = match self.blink_state {
+            BlinkState::Normal => {
+                self.blink_state = BlinkState::Blinking;
+                (self.palette.head, self.palette.body)
+            }
+            BlinkState::Blinking => {
+                self.blink_state = BlinkState::Normal;
+                (self.palette.head_inv, self.palette.body_inv)
+            }
+        };
+
+        self.apply_colors(head, body);
+    }
+
+    fn apply_colors(&mut self, head: Color, body: Color) {
+        self.head_mut().square.color = head;
+
+        for part in self.parts.iter_mut().skip(1) {
+            part.square.color = body;
         }
     }
 }

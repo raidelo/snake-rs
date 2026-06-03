@@ -5,6 +5,8 @@ pub struct PaletteColors {
     pub background: Color,
     pub snake_body: Color,
     pub snake_head: Color,
+    pub snake_body_inv: Color,
+    pub snake_head_inv: Color,
     pub food: Color,
     pub borders: Color,
     pub score_text: Color,
@@ -42,6 +44,16 @@ impl PaletteColors {
             g: 0x38,
             b: 0x0f,
         },
+        snake_body_inv: Color::Rgb {
+            r: 0x65,
+            g: 0x8f,
+            b: 0x1f,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x54,
+            g: 0x7a,
+            b: 0x0f,
+        },
     };
 
     pub const NEON_V1: Self = Self {
@@ -74,6 +86,16 @@ impl PaletteColors {
             r: 0xff,
             g: 0xe0,
             b: 0x00,
+        },
+        snake_body_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x75,
+            b: 0x88,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x80,
+            g: 0x00,
+            b: 0x50,
         },
     };
 
@@ -108,6 +130,16 @@ impl PaletteColors {
             g: 0xff,
             b: 0xcc,
         },
+        snake_body_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x66,
+            b: 0x55,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x66,
+            g: 0x00,
+            b: 0x66,
+        },
     };
 
     pub const ORGANIC_V1: Self = Self {
@@ -140,6 +172,16 @@ impl PaletteColors {
             r: 0xd4,
             g: 0xe8,
             b: 0x57,
+        },
+        snake_body_inv: Color::Rgb {
+            r: 0x43,
+            g: 0x5c,
+            b: 0x37,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x78,
+            g: 0x84,
+            b: 0x38,
         },
     };
 
@@ -174,6 +216,16 @@ impl PaletteColors {
             g: 0xbb,
             b: 0x26,
         },
+        snake_body_inv: Color::Rgb {
+            r: 0x5b,
+            g: 0x74,
+            b: 0x52,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x70,
+            g: 0x72,
+            b: 0x27,
+        },
     };
 
     pub const DRACULA: Self = Self {
@@ -206,6 +258,16 @@ impl PaletteColors {
             r: 0xf8,
             g: 0xf8,
             b: 0xf2,
+        },
+        snake_body_inv: Color::Rgb {
+            r: 0x3c,
+            g: 0x92,
+            b: 0x58,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x94,
+            g: 0x52,
+            b: 0x7e,
         },
     };
 
@@ -240,6 +302,16 @@ impl PaletteColors {
             g: 0xff,
             b: 0xff,
         },
+        snake_body_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x57,
+            b: 0x80,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x77,
+            b: 0x99,
+        },
     };
 
     pub const MATRIX: Self = Self {
@@ -271,6 +343,16 @@ impl PaletteColors {
         score_text: Color::Rgb {
             r: 0x00,
             g: 0xff,
+            b: 0x00,
+        },
+        snake_body_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x55,
+            b: 0x00,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x77,
             b: 0x00,
         },
     };
@@ -306,6 +388,16 @@ impl PaletteColors {
             g: 0xd7,
             b: 0x00,
         },
+        snake_body_inv: Color::Rgb {
+            r: 0x8d,
+            g: 0x3c,
+            b: 0x00,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x8d,
+            g: 0x77,
+            b: 0x00,
+        },
     };
 
     pub const NORD: Self = Self {
@@ -338,6 +430,16 @@ impl PaletteColors {
             r: 0xe5,
             g: 0xe9,
             b: 0xf0,
+        },
+        snake_body_inv: Color::Rgb {
+            r: 0x68,
+            g: 0x79,
+            b: 0x66,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x8d,
+            g: 0x7f,
+            b: 0x66,
         },
     };
 
@@ -372,12 +474,27 @@ impl PaletteColors {
             g: 0x00,
             b: 0xaa,
         },
+        snake_body_inv: Color::Rgb {
+            r: 0x00,
+            g: 0x55,
+            b: 0x55,
+        },
+        snake_head_inv: Color::Rgb {
+            r: 0x2a,
+            g: 0x88,
+            b: 0x88,
+        },
     };
 
     pub fn unpack(self) -> (WindowPalette, SnakePalette, Color) {
         (
             WindowPalette::new(self.background, self.borders, self.score_text),
-            SnakePalette::new(self.snake_head, self.snake_body),
+            SnakePalette::new(
+                self.snake_head,
+                self.snake_body,
+                self.snake_head_inv,
+                self.snake_body_inv,
+            ),
             self.food,
         )
     }
@@ -444,16 +561,28 @@ impl From<PaletteColors> for WindowPalette {
 pub struct SnakePalette {
     pub body: Color,
     pub head: Color,
+    pub body_inv: Color,
+    pub head_inv: Color,
 }
 
 impl SnakePalette {
-    pub fn new(head: Color, body: Color) -> Self {
-        Self { head, body }
+    pub fn new(head: Color, body: Color, head_inv: Color, body_inv: Color) -> Self {
+        Self {
+            head,
+            body,
+            head_inv,
+            body_inv,
+        }
     }
 }
 
 impl From<PaletteColors> for SnakePalette {
     fn from(value: PaletteColors) -> Self {
-        Self::new(value.snake_head, value.snake_body)
+        Self::new(
+            value.snake_head,
+            value.snake_body,
+            value.snake_head_inv,
+            value.snake_body_inv,
+        )
     }
 }

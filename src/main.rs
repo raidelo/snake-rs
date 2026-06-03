@@ -128,7 +128,9 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         window.set_background_color()?;
         window.draw_borders(snake.score(), snake.lives)?;
 
-        grow = if is_going_to_eat_fruit(&snake, &fruit) {
+        let invincible = snake.is_invincible();
+
+        grow = if is_going_to_eat_fruit(&snake, &fruit) && !invincible {
             fruit.regenerate(&window);
             true
         } else {
@@ -138,6 +140,11 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         if let Err(imp) = snake.update(&window, grow) {
             break Err(imp.into());
         };
+
+        if snake.is_invincible() {
+            snake.blink();
+        }
+
         window.render(&snake)?;
 
         window.render(&fruit)?;
