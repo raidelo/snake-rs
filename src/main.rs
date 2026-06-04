@@ -66,6 +66,31 @@ async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
     Ok(())
 }
 
+async fn show_start_screen(rx: &mut Receiver<Event>, window: &Window) -> Result<(), io::Error> {
+    let mut stdout = stdout();
+
+    let msg = "Press any key to play";
+    let x = (window.width - msg.len() as u16) / 2;
+    let y = window.height / 2;
+
+    window.set_background_color()?;
+
+    stdout
+        .queue(crossterm::cursor::MoveTo(x, y))?
+        .queue(crossterm::style::Print(msg))?
+        .flush()?;
+
+    loop {
+        match rx.recv().await {
+            Some(Event::Key(_)) => break,
+            Some(_) => continue,
+            None => break,
+        }
+    }
+
+    Ok(())
+}
+
 async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     let style = PaletteStyle::OrganicV1;
     let (window_palette, snake_palette, food_color) = style.palette().unpack();
@@ -73,6 +98,8 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     let (width, height) = crossterm::terminal::size()?;
 
     let mut window = Window::new(width, height, window_palette);
+
+    show_start_screen(&mut rx, &window).await?;
 
     let mut snake = Snake::new(
         Axes::new(make_even_by_substracting(width / 4), height / 2),
