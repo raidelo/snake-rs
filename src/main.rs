@@ -5,16 +5,16 @@ mod types;
 
 use std::io::{self, Write, stdout};
 
-use crossterm::QueueableCommand;
 use crossterm::event::{Event, EventStream, KeyCode};
 use futures::StreamExt;
 use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::{Duration, interval};
 
 use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
-use crate::menu::{MenuChoice, MenuError, menu};
+use crate::menu::{MenuChoice, menu};
 use crate::types::{
-    Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window, is_going_to_eat_fruit,
+    Axes, ColorsPalette, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window,
+    is_going_to_eat_fruit,
 };
 
 #[tokio::main]
@@ -32,31 +32,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let listener_handler = tokio::task::spawn(keyboard_listener(tx));
 
-    let result = run_game(rx).await;
+    let result = run_app(rx).await;
     listener_handler.abort();
 
     reset_terminal()?;
 
     match result {
-        Ok(()) => Ok(()),
-
-        Err(GameError::ImpactError(_)) => {
-            stdout()
-                .queue(crossterm::style::SetAttribute(
-                    crossterm::style::Attribute::Bold,
-                ))?
-                .queue(crossterm::style::Print("You lost\n"))?
-                .queue(crossterm::style::SetAttribute(
-                    crossterm::style::Attribute::Reset,
-                ))?
-                .flush()?;
-            Ok(())
-        }
-
-        Err(GameError::IOError(err)) => Err(Box::new(err) as Box<dyn std::error::Error>),
-
-        Err(GameError::Interrupt) => Ok(()),
+        Ok(GameResult::Impact(_)) => {}
+        Ok(GameResult::Quit) => {}
+        Err(AppError::KeyboardListenerDisconnection) => {}
+        Err(AppError::IOError(e)) => return Err(Box::new(e) as Box<dyn std::error::Error>),
     }
+
+    Ok(())
 }
 
 async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
@@ -73,7 +61,7 @@ async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
 async fn show_start_screen(
     rx: &mut Receiver<Event>,
     window: &Window,
-) -> Result<MenuChoice, MenuError> {
+) -> Result<MenuChoice, AppError> {
     window.set_background_color()?;
 
     menu(
@@ -98,12 +86,12 @@ async fn show_start_screen(
                 _ => continue,
             },
             Some(_) => continue,
-            None => break Err(MenuError::Interrupt),
+            None => break Err(AppError::KeyboardListenerDisconnection),
         }
     }
 }
 
-async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
+async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
     let style = PaletteStyle::OrganicV1;
     let palette = style.palette();
 
@@ -112,11 +100,22 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     let mut window = Window::new(width, height, palette.window);
 
     if let MenuChoice::Quit = show_start_screen(&mut rx, &window).await? {
-        return Ok(());
+        return Ok(GameResult::Quit);
     };
 
+    run(&mut rx, &mut window, palette).await
+}
+
+async fn run(
+    rx: &mut Receiver<Event>,
+    window: &mut Window,
+    palette: ColorsPalette,
+) -> Result<GameResult, AppError> {
     let mut snake = Snake::new(
-        Axes::new(make_even_by_substracting(width / 4), height / 2),
+        Axes::new(
+            make_even_by_substracting(window.width / 4),
+            window.height / 2,
+        ),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
         constants::INITIAL_SNAKE_LIVES,
@@ -124,7 +123,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     );
     let mut grow: bool;
 
-    let mut fruit = Fruit::random_generate(&window, palette.food);
+    let mut fruit = Fruit::random_generate(window, palette.food);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
@@ -153,7 +152,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
                         KeyCode::Right | KeyCode::Char('d') => {
                             snake.change_direction(Direction::Right);
                         }
-                        KeyCode::Esc | KeyCode::Char('q') => break Ok(()),
+                        KeyCode::Esc | KeyCode::Char('q') => break Ok(GameResult::Quit),
 
                         _ => (),
                     };
@@ -165,7 +164,9 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
             },
 
             Err(TryRecvError::Empty) => (),
-            Err(TryRecvError::Disconnected) => break Err(GameError::Interrupt),
+            Err(TryRecvError::Disconnected) => {
+                break Err(AppError::KeyboardListenerDisconnection);
+            }
         };
 
         window.set_background_color()?;
@@ -174,14 +175,14 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         let invincible = snake.is_invincible();
 
         grow = if is_going_to_eat_fruit(&snake, &fruit) && !invincible {
-            fruit.regenerate(&window);
+            fruit.regenerate(window);
             true
         } else {
             false
         };
 
-        if let Err(imp) = snake.update(&window, grow) {
-            break Err(imp.into());
+        if let Err(impact) = snake.update(window, grow) {
+            break Ok(GameResult::Impact(impact));
         };
 
         if snake.is_invincible() {
@@ -196,30 +197,18 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     }
 }
 
-#[allow(unused)]
-enum GameError {
-    IOError(io::Error),
-    ImpactError(ImpactError),
-    Interrupt,
+enum GameResult {
+    Impact(ImpactError),
+    Quit,
 }
 
-impl From<io::Error> for GameError {
+enum AppError {
+    IOError(io::Error),
+    KeyboardListenerDisconnection,
+}
+
+impl From<io::Error> for AppError {
     fn from(value: io::Error) -> Self {
         Self::IOError(value)
-    }
-}
-
-impl From<ImpactError> for GameError {
-    fn from(value: ImpactError) -> Self {
-        Self::ImpactError(value)
-    }
-}
-
-impl From<MenuError> for GameError {
-    fn from(value: MenuError) -> Self {
-        match value {
-            MenuError::IOError(err) => Self::IOError(err),
-            MenuError::Interrupt => Self::Interrupt,
-        }
     }
 }

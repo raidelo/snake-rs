@@ -62,14 +62,3 @@ pub enum MenuChoice {
     Start,
     Quit,
 }
-
-pub enum MenuError {
-    IOError(io::Error),
-    Interrupt,
-}
-
-impl From<io::Error> for MenuError {
-    fn from(value: io::Error) -> Self {
-        Self::IOError(value)
-    }
-}
