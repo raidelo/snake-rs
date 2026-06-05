@@ -21,13 +21,13 @@ pub struct FoodPalette {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct ColorsPalette {
+pub struct Palette {
     pub window: WindowPalette,
     pub snake: SnakePalette,
     pub food: FoodPalette,
 }
 
-impl ColorsPalette {
+impl Palette {
     pub const CLASSIC: Self = Self {
         window: WindowPalette {
             background: Color::Rgb {
@@ -570,7 +570,7 @@ impl ColorsPalette {
 
 #[allow(unused)]
 #[derive(Debug, Clone, Copy)]
-pub enum PaletteStyle {
+pub enum Theme {
     Classic,
     NeonV1,
     NeonV2,
@@ -584,20 +584,20 @@ pub enum PaletteStyle {
     RetroCga,
 }
 
-impl PaletteStyle {
-    pub fn palette(&self) -> ColorsPalette {
+impl Theme {
+    pub fn palette(&self) -> Palette {
         match self {
-            Self::Classic => ColorsPalette::CLASSIC,
-            Self::NeonV1 => ColorsPalette::NEON_V1,
-            Self::NeonV2 => ColorsPalette::NEON_V2,
-            Self::OrganicV1 => ColorsPalette::ORGANIC_V1,
-            Self::OrganicV2 => ColorsPalette::ORGANIC_V2,
-            Self::Dracula => ColorsPalette::DRACULA,
-            Self::Ocean => ColorsPalette::OCEAN,
-            Self::Matrix => ColorsPalette::MATRIX,
-            Self::Sunset => ColorsPalette::SUNSET,
-            Self::Nord => ColorsPalette::NORD,
-            Self::RetroCga => ColorsPalette::RETRO_CGA,
+            Self::Classic => Palette::CLASSIC,
+            Self::NeonV1 => Palette::NEON_V1,
+            Self::NeonV2 => Palette::NEON_V2,
+            Self::OrganicV1 => Palette::ORGANIC_V1,
+            Self::OrganicV2 => Palette::ORGANIC_V2,
+            Self::Dracula => Palette::DRACULA,
+            Self::Ocean => Palette::OCEAN,
+            Self::Matrix => Palette::MATRIX,
+            Self::Sunset => Palette::SUNSET,
+            Self::Nord => Palette::NORD,
+            Self::RetroCga => Palette::RETRO_CGA,
         }
     }
 }

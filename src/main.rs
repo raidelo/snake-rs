@@ -13,8 +13,7 @@ use tokio::time::{Duration, interval};
 use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
 use crate::menu::{MenuChoice, menu};
 use crate::types::{
-    Axes, ColorsPalette, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window,
-    is_going_to_eat_fruit,
+    Axes, Direction, Fruit, ImpactError, Palette, Snake, Theme, Window, is_going_to_eat_fruit,
 };
 
 #[tokio::main]
@@ -92,7 +91,7 @@ async fn show_start_screen(
 }
 
 async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
-    let style = PaletteStyle::OrganicV1;
+    let style = Theme::OrganicV1;
     let palette = style.palette();
 
     let (width, height) = crossterm::terminal::size()?;
@@ -109,7 +108,7 @@ async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
 async fn run(
     rx: &mut Receiver<Event>,
     window: &mut Window,
-    palette: ColorsPalette,
+    palette: Palette,
 ) -> Result<GameResult, AppError> {
     let mut snake = Snake::new(
         Axes::new(
