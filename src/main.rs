@@ -1,5 +1,6 @@
 mod constants;
 mod helpers;
+mod menu;
 mod types;
 
 use std::io::{self, Write, stdout};
@@ -11,6 +12,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::{Duration, interval};
 
 use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
+use crate::menu::{MenuChoice, MenuError, menu};
 use crate::types::{
     Axes, Direction, Fruit, ImpactError, PaletteStyle, Snake, Window, is_going_to_eat_fruit,
 };
@@ -52,6 +54,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         Err(GameError::IOError(err)) => Err(Box::new(err) as Box<dyn std::error::Error>),
+
+        Err(GameError::Interrupt) => Ok(()),
     }
 }
 
@@ -66,29 +70,37 @@ async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
     Ok(())
 }
 
-async fn show_start_screen(rx: &mut Receiver<Event>, window: &Window) -> Result<(), io::Error> {
-    let mut stdout = stdout();
-
-    let msg = "Press any key to play";
-    let x = (window.width - msg.len() as u16) / 2;
-    let y = window.height / 2;
-
+async fn show_start_screen(
+    rx: &mut Receiver<Event>,
+    window: &Window,
+) -> Result<MenuChoice, MenuError> {
     window.set_background_color()?;
 
-    stdout
-        .queue(crossterm::cursor::MoveTo(x, y))?
-        .queue(crossterm::style::Print(msg))?
-        .flush()?;
+    menu(
+        window,
+        &[
+            (
+                constants::MENU_ENTER_CHOICE,
+                constants::MENU_ENTER_CHOICE_VALUE,
+            ),
+            (
+                constants::MENU_QUIT_CHOICE,
+                constants::MENU_QUIT_CHOICE_VALUE,
+            ),
+        ],
+    )?;
 
     loop {
         match rx.recv().await {
-            Some(Event::Key(_)) => break,
+            Some(Event::Key(event)) => match event.code {
+                KeyCode::Enter => break Ok(MenuChoice::Start),
+                KeyCode::Char('q') | KeyCode::Char('Q') => break Ok(MenuChoice::Quit),
+                _ => continue,
+            },
             Some(_) => continue,
-            None => break,
+            None => break Err(MenuError::Interrupt),
         }
     }
-
-    Ok(())
 }
 
 async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
@@ -99,7 +111,9 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
 
     let mut window = Window::new(width, height, window_palette);
 
-    show_start_screen(&mut rx, &window).await?;
+    if let MenuChoice::Quit = show_start_screen(&mut rx, &window).await? {
+        return Ok(());
+    };
 
     let mut snake = Snake::new(
         Axes::new(make_even_by_substracting(width / 4), height / 2),
@@ -151,7 +165,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
             },
 
             Err(TryRecvError::Empty) => (),
-            Err(TryRecvError::Disconnected) => break Ok(()),
+            Err(TryRecvError::Disconnected) => break Err(GameError::Interrupt),
         };
 
         window.set_background_color()?;
@@ -186,6 +200,7 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
 enum GameError {
     IOError(io::Error),
     ImpactError(ImpactError),
+    Interrupt,
 }
 
 impl From<io::Error> for GameError {
@@ -197,5 +212,14 @@ impl From<io::Error> for GameError {
 impl From<ImpactError> for GameError {
     fn from(value: ImpactError) -> Self {
         Self::ImpactError(value)
+    }
+}
+
+impl From<MenuError> for GameError {
+    fn from(value: MenuError) -> Self {
+        match value {
+            MenuError::IOError(err) => Self::IOError(err),
+            MenuError::Interrupt => Self::Interrupt,
+        }
     }
 }
