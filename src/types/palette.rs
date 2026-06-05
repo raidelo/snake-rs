@@ -1,507 +1,575 @@
 use crossterm::style::Color;
 
-#[derive(Debug)]
-pub struct PaletteColors {
+#[derive(Debug, Clone, Copy)]
+pub struct WindowPalette {
     pub background: Color,
-    pub snake_body: Color,
-    pub snake_head: Color,
-    pub snake_body_inv: Color,
-    pub snake_head_inv: Color,
-    pub food: Color,
     pub borders: Color,
     pub score_text: Color,
 }
 
-impl PaletteColors {
+#[derive(Debug, Clone, Copy)]
+pub struct SnakePalette {
+    pub body: Color,
+    pub head: Color,
+    pub body_inv: Color,
+    pub head_inv: Color,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct FoodPalette {
+    pub food: Color,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ColorsPalette {
+    pub window: WindowPalette,
+    pub snake: SnakePalette,
+    pub food: FoodPalette,
+}
+
+impl ColorsPalette {
     pub const CLASSIC: Self = Self {
-        background: Color::Rgb {
-            r: 0x9b,
-            g: 0xbc,
-            b: 0x0f,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x9b,
+                g: 0xbc,
+                b: 0x0f,
+            },
+            borders: Color::Rgb {
+                r: 0x0f,
+                g: 0x38,
+                b: 0x0f,
+            },
+            score_text: Color::Rgb {
+                r: 0x0f,
+                g: 0x38,
+                b: 0x0f,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x30,
-            g: 0x62,
-            b: 0x30,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x30,
+                g: 0x62,
+                b: 0x30,
+            },
+            head: Color::Rgb {
+                r: 0x0f,
+                g: 0x38,
+                b: 0x0f,
+            },
+            body_inv: Color::Rgb {
+                r: 0x65,
+                g: 0x8f,
+                b: 0x1f,
+            },
+            head_inv: Color::Rgb {
+                r: 0x54,
+                g: 0x7a,
+                b: 0x0f,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0x0f,
-            g: 0x38,
-            b: 0x0f,
-        },
-        food: Color::Rgb {
-            r: 0x8b,
-            g: 0x00,
-            b: 0x00,
-        },
-        borders: Color::Rgb {
-            r: 0x0f,
-            g: 0x38,
-            b: 0x0f,
-        },
-        score_text: Color::Rgb {
-            r: 0x0f,
-            g: 0x38,
-            b: 0x0f,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x65,
-            g: 0x8f,
-            b: 0x1f,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x54,
-            g: 0x7a,
-            b: 0x0f,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0x8b,
+                g: 0x00,
+                b: 0x00,
+            },
         },
     };
 
     pub const NEON_V1: Self = Self {
-        background: Color::Rgb {
-            r: 0x05,
-            g: 0x05,
-            b: 0x10,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x05,
+                g: 0x05,
+                b: 0x10,
+            },
+            borders: Color::Rgb {
+                r: 0x7b,
+                g: 0x2f,
+                b: 0xff,
+            },
+            score_text: Color::Rgb {
+                r: 0xff,
+                g: 0xe0,
+                b: 0x00,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x00,
-            g: 0xe5,
-            b: 0xff,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x00,
+                g: 0xe5,
+                b: 0xff,
+            },
+            head: Color::Rgb {
+                r: 0xff,
+                g: 0x00,
+                b: 0x90,
+            },
+            body_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x75,
+                b: 0x88,
+            },
+            head_inv: Color::Rgb {
+                r: 0x80,
+                g: 0x00,
+                b: 0x50,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xff,
-            g: 0x00,
-            b: 0x90,
-        },
-        food: Color::Rgb {
-            r: 0xff,
-            g: 0xe0,
-            b: 0x00,
-        },
-        borders: Color::Rgb {
-            r: 0x7b,
-            g: 0x2f,
-            b: 0xff,
-        },
-        score_text: Color::Rgb {
-            r: 0xff,
-            g: 0xe0,
-            b: 0x00,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x75,
-            b: 0x88,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x80,
-            g: 0x00,
-            b: 0x50,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xff,
+                g: 0xe0,
+                b: 0x00,
+            },
         },
     };
 
     pub const NEON_V2: Self = Self {
-        background: Color::Rgb {
-            r: 0x00,
-            g: 0x00,
-            b: 0x00,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+            },
+            borders: Color::Rgb {
+                r: 0xff,
+                g: 0xff,
+                b: 0x00,
+            },
+            score_text: Color::Rgb {
+                r: 0x00,
+                g: 0xff,
+                b: 0xcc,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x00,
-            g: 0xff,
-            b: 0xcc,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x00,
+                g: 0xff,
+                b: 0xcc,
+            },
+            head: Color::Rgb {
+                r: 0xff,
+                g: 0x00,
+                b: 0xff,
+            },
+            body_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x66,
+                b: 0x55,
+            },
+            head_inv: Color::Rgb {
+                r: 0x66,
+                g: 0x00,
+                b: 0x66,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xff,
-            g: 0x00,
-            b: 0xff,
-        },
-        food: Color::Rgb {
-            r: 0xff,
-            g: 0x33,
-            b: 0x66,
-        },
-        borders: Color::Rgb {
-            r: 0xff,
-            g: 0xff,
-            b: 0x00,
-        },
-        score_text: Color::Rgb {
-            r: 0x00,
-            g: 0xff,
-            b: 0xcc,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x66,
-            b: 0x55,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x66,
-            g: 0x00,
-            b: 0x66,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xff,
+                g: 0x33,
+                b: 0x66,
+            },
         },
     };
 
     pub const ORGANIC_V1: Self = Self {
-        background: Color::Rgb {
-            r: 0x1d,
-            g: 0x20,
-            b: 0x1a,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x1d,
+                g: 0x20,
+                b: 0x1a,
+            },
+            borders: Color::Rgb {
+                r: 0x4a,
+                g: 0x6e,
+                b: 0x3c,
+            },
+            score_text: Color::Rgb {
+                r: 0xd4,
+                g: 0xe8,
+                b: 0x57,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x6a,
-            g: 0x99,
-            b: 0x55,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x6a,
+                g: 0x99,
+                b: 0x55,
+            },
+            head: Color::Rgb {
+                r: 0xd4,
+                g: 0xe8,
+                b: 0x57,
+            },
+            body_inv: Color::Rgb {
+                r: 0x43,
+                g: 0x5c,
+                b: 0x37,
+            },
+            head_inv: Color::Rgb {
+                r: 0x78,
+                g: 0x84,
+                b: 0x38,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xd4,
-            g: 0xe8,
-            b: 0x57,
-        },
-        food: Color::Rgb {
-            r: 0xe8,
-            g: 0x3a,
-            b: 0x1f,
-        },
-        borders: Color::Rgb {
-            r: 0x4a,
-            g: 0x6e,
-            b: 0x3c,
-        },
-        score_text: Color::Rgb {
-            r: 0xd4,
-            g: 0xe8,
-            b: 0x57,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x43,
-            g: 0x5c,
-            b: 0x37,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x78,
-            g: 0x84,
-            b: 0x38,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xe8,
+                g: 0x3a,
+                b: 0x1f,
+            },
         },
     };
 
     pub const ORGANIC_V2: Self = Self {
-        background: Color::Rgb {
-            r: 0x28,
-            g: 0x28,
-            b: 0x28,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x28,
+                g: 0x28,
+                b: 0x28,
+            },
+            borders: Color::Rgb {
+                r: 0x83,
+                g: 0xa5,
+                b: 0x98,
+            },
+            score_text: Color::Rgb {
+                r: 0xb8,
+                g: 0xbb,
+                b: 0x26,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x8e,
-            g: 0xc0,
-            b: 0x7c,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x8e,
+                g: 0xc0,
+                b: 0x7c,
+            },
+            head: Color::Rgb {
+                r: 0xb8,
+                g: 0xbb,
+                b: 0x26,
+            },
+            body_inv: Color::Rgb {
+                r: 0x5b,
+                g: 0x74,
+                b: 0x52,
+            },
+            head_inv: Color::Rgb {
+                r: 0x70,
+                g: 0x72,
+                b: 0x27,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xb8,
-            g: 0xbb,
-            b: 0x26,
-        },
-        food: Color::Rgb {
-            r: 0xfb,
-            g: 0x49,
-            b: 0x34,
-        },
-        borders: Color::Rgb {
-            r: 0x83,
-            g: 0xa5,
-            b: 0x98,
-        },
-        score_text: Color::Rgb {
-            r: 0xb8,
-            g: 0xbb,
-            b: 0x26,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x5b,
-            g: 0x74,
-            b: 0x52,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x70,
-            g: 0x72,
-            b: 0x27,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xfb,
+                g: 0x49,
+                b: 0x34,
+            },
         },
     };
 
     pub const DRACULA: Self = Self {
-        background: Color::Rgb {
-            r: 0x28,
-            g: 0x2a,
-            b: 0x36,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x28,
+                g: 0x2a,
+                b: 0x36,
+            },
+            borders: Color::Rgb {
+                r: 0xbd,
+                g: 0x93,
+                b: 0xf9,
+            },
+            score_text: Color::Rgb {
+                r: 0xf8,
+                g: 0xf8,
+                b: 0xf2,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x50,
-            g: 0xfa,
-            b: 0x7b,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x50,
+                g: 0xfa,
+                b: 0x7b,
+            },
+            head: Color::Rgb {
+                r: 0xff,
+                g: 0x79,
+                b: 0xc6,
+            },
+            body_inv: Color::Rgb {
+                r: 0x3c,
+                g: 0x92,
+                b: 0x58,
+            },
+            head_inv: Color::Rgb {
+                r: 0x94,
+                g: 0x52,
+                b: 0x7e,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xff,
-            g: 0x79,
-            b: 0xc6,
-        },
-        food: Color::Rgb {
-            r: 0xff,
-            g: 0xb8,
-            b: 0x6c,
-        },
-        borders: Color::Rgb {
-            r: 0xbd,
-            g: 0x93,
-            b: 0xf9,
-        },
-        score_text: Color::Rgb {
-            r: 0xf8,
-            g: 0xf8,
-            b: 0xf2,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x3c,
-            g: 0x92,
-            b: 0x58,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x94,
-            g: 0x52,
-            b: 0x7e,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xff,
+                g: 0xb8,
+                b: 0x6c,
+            },
         },
     };
 
     pub const OCEAN: Self = Self {
-        background: Color::Rgb {
-            r: 0x00,
-            g: 0x1a,
-            b: 0x33,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x00,
+                g: 0x1a,
+                b: 0x33,
+            },
+            borders: Color::Rgb {
+                r: 0x00,
+                g: 0x55,
+                b: 0x88,
+            },
+            score_text: Color::Rgb {
+                r: 0xff,
+                g: 0xff,
+                b: 0xff,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x00,
-            g: 0x99,
-            b: 0xcc,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x00,
+                g: 0x99,
+                b: 0xcc,
+            },
+            head: Color::Rgb {
+                r: 0x00,
+                g: 0xd4,
+                b: 0xff,
+            },
+            body_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x57,
+                b: 0x80,
+            },
+            head_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x77,
+                b: 0x99,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0x00,
-            g: 0xd4,
-            b: 0xff,
-        },
-        food: Color::Rgb {
-            r: 0xff,
-            g: 0x6b,
-            b: 0x35,
-        },
-        borders: Color::Rgb {
-            r: 0x00,
-            g: 0x55,
-            b: 0x88,
-        },
-        score_text: Color::Rgb {
-            r: 0xff,
-            g: 0xff,
-            b: 0xff,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x57,
-            b: 0x80,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x77,
-            b: 0x99,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xff,
+                g: 0x6b,
+                b: 0x35,
+            },
         },
     };
 
     pub const MATRIX: Self = Self {
-        background: Color::Rgb {
-            r: 0x00,
-            g: 0x00,
-            b: 0x00,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+            },
+            borders: Color::Rgb {
+                r: 0x00,
+                g: 0x66,
+                b: 0x00,
+            },
+            score_text: Color::Rgb {
+                r: 0x00,
+                g: 0xff,
+                b: 0x00,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x00,
-            g: 0xcc,
-            b: 0x00,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x00,
+                g: 0xcc,
+                b: 0x00,
+            },
+            head: Color::Rgb {
+                r: 0x00,
+                g: 0xff,
+                b: 0x00,
+            },
+            body_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x55,
+                b: 0x00,
+            },
+            head_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x77,
+                b: 0x00,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0x00,
-            g: 0xff,
-            b: 0x00,
-        },
-        food: Color::Rgb {
-            r: 0xff,
-            g: 0xff,
-            b: 0xff,
-        },
-        borders: Color::Rgb {
-            r: 0x00,
-            g: 0x66,
-            b: 0x00,
-        },
-        score_text: Color::Rgb {
-            r: 0x00,
-            g: 0xff,
-            b: 0x00,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x55,
-            b: 0x00,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x77,
-            b: 0x00,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xff,
+                g: 0xff,
+                b: 0xff,
+            },
         },
     };
 
     pub const SUNSET: Self = Self {
-        background: Color::Rgb {
-            r: 0x1a,
-            g: 0x0a,
-            b: 0x00,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x1a,
+                g: 0x0a,
+                b: 0x00,
+            },
+            borders: Color::Rgb {
+                r: 0xcc,
+                g: 0x44,
+                b: 0x00,
+            },
+            score_text: Color::Rgb {
+                r: 0xff,
+                g: 0xd7,
+                b: 0x00,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0xff,
-            g: 0x6b,
-            b: 0x00,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0xff,
+                g: 0x6b,
+                b: 0x00,
+            },
+            head: Color::Rgb {
+                r: 0xff,
+                g: 0xd7,
+                b: 0x00,
+            },
+            body_inv: Color::Rgb {
+                r: 0x8d,
+                g: 0x3c,
+                b: 0x00,
+            },
+            head_inv: Color::Rgb {
+                r: 0x8d,
+                g: 0x77,
+                b: 0x00,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xff,
-            g: 0xd7,
-            b: 0x00,
-        },
-        food: Color::Rgb {
-            r: 0xff,
-            g: 0x00,
-            b: 0x40,
-        },
-        borders: Color::Rgb {
-            r: 0xcc,
-            g: 0x44,
-            b: 0x00,
-        },
-        score_text: Color::Rgb {
-            r: 0xff,
-            g: 0xd7,
-            b: 0x00,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x8d,
-            g: 0x3c,
-            b: 0x00,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x8d,
-            g: 0x77,
-            b: 0x00,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xff,
+                g: 0x00,
+                b: 0x40,
+            },
         },
     };
 
     pub const NORD: Self = Self {
-        background: Color::Rgb {
-            r: 0x2e,
-            g: 0x34,
-            b: 0x40,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x2e,
+                g: 0x34,
+                b: 0x40,
+            },
+            borders: Color::Rgb {
+                r: 0x81,
+                g: 0xa1,
+                b: 0xc1,
+            },
+            score_text: Color::Rgb {
+                r: 0xe5,
+                g: 0xe9,
+                b: 0xf0,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0xa3,
-            g: 0xbe,
-            b: 0x8c,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0xa3,
+                g: 0xbe,
+                b: 0x8c,
+            },
+            head: Color::Rgb {
+                r: 0xeb,
+                g: 0xcb,
+                b: 0x8b,
+            },
+            body_inv: Color::Rgb {
+                r: 0x68,
+                g: 0x79,
+                b: 0x66,
+            },
+            head_inv: Color::Rgb {
+                r: 0x8d,
+                g: 0x7f,
+                b: 0x66,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0xeb,
-            g: 0xcb,
-            b: 0x8b,
-        },
-        food: Color::Rgb {
-            r: 0xbf,
-            g: 0x61,
-            b: 0x6a,
-        },
-        borders: Color::Rgb {
-            r: 0x81,
-            g: 0xa1,
-            b: 0xc1,
-        },
-        score_text: Color::Rgb {
-            r: 0xe5,
-            g: 0xe9,
-            b: 0xf0,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x68,
-            g: 0x79,
-            b: 0x66,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x8d,
-            g: 0x7f,
-            b: 0x66,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xbf,
+                g: 0x61,
+                b: 0x6a,
+            },
         },
     };
 
     pub const RETRO_CGA: Self = Self {
-        background: Color::Rgb {
-            r: 0x00,
-            g: 0x00,
-            b: 0x00,
+        window: WindowPalette {
+            background: Color::Rgb {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+            },
+            borders: Color::Rgb {
+                r: 0xff,
+                g: 0xff,
+                b: 0xff,
+            },
+            score_text: Color::Rgb {
+                r: 0xaa,
+                g: 0x00,
+                b: 0xaa,
+            },
         },
-        snake_body: Color::Rgb {
-            r: 0x00,
-            g: 0xaa,
-            b: 0xaa,
+        snake: SnakePalette {
+            body: Color::Rgb {
+                r: 0x00,
+                g: 0xaa,
+                b: 0xaa,
+            },
+            head: Color::Rgb {
+                r: 0x55,
+                g: 0xff,
+                b: 0xff,
+            },
+            body_inv: Color::Rgb {
+                r: 0x00,
+                g: 0x55,
+                b: 0x55,
+            },
+            head_inv: Color::Rgb {
+                r: 0x2a,
+                g: 0x88,
+                b: 0x88,
+            },
         },
-        snake_head: Color::Rgb {
-            r: 0x55,
-            g: 0xff,
-            b: 0xff,
-        },
-        food: Color::Rgb {
-            r: 0xaa,
-            g: 0x00,
-            b: 0xaa,
-        },
-        borders: Color::Rgb {
-            r: 0xff,
-            g: 0xff,
-            b: 0xff,
-        },
-        score_text: Color::Rgb {
-            r: 0xaa,
-            g: 0x00,
-            b: 0xaa,
-        },
-        snake_body_inv: Color::Rgb {
-            r: 0x00,
-            g: 0x55,
-            b: 0x55,
-        },
-        snake_head_inv: Color::Rgb {
-            r: 0x2a,
-            g: 0x88,
-            b: 0x88,
+        food: FoodPalette {
+            food: Color::Rgb {
+                r: 0xaa,
+                g: 0x00,
+                b: 0xaa,
+            },
         },
     };
-
-    pub fn unpack(self) -> (WindowPalette, SnakePalette, Color) {
-        (
-            WindowPalette::new(self.background, self.borders, self.score_text),
-            SnakePalette::new(
-                self.snake_head,
-                self.snake_body,
-                self.snake_head_inv,
-                self.snake_body_inv,
-            ),
-            self.food,
-        )
-    }
 }
 
 #[allow(unused)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum PaletteStyle {
     Classic,
     NeonV1,
@@ -517,72 +585,19 @@ pub enum PaletteStyle {
 }
 
 impl PaletteStyle {
-    pub fn palette(&self) -> PaletteColors {
+    pub fn palette(&self) -> ColorsPalette {
         match self {
-            Self::Classic => PaletteColors::CLASSIC,
-            Self::NeonV1 => PaletteColors::NEON_V1,
-            Self::NeonV2 => PaletteColors::NEON_V2,
-            Self::OrganicV1 => PaletteColors::ORGANIC_V1,
-            Self::OrganicV2 => PaletteColors::ORGANIC_V2,
-            Self::Dracula => PaletteColors::DRACULA,
-            Self::Ocean => PaletteColors::OCEAN,
-            Self::Matrix => PaletteColors::MATRIX,
-            Self::Sunset => PaletteColors::SUNSET,
-            Self::Nord => PaletteColors::NORD,
-            Self::RetroCga => PaletteColors::RETRO_CGA,
+            Self::Classic => ColorsPalette::CLASSIC,
+            Self::NeonV1 => ColorsPalette::NEON_V1,
+            Self::NeonV2 => ColorsPalette::NEON_V2,
+            Self::OrganicV1 => ColorsPalette::ORGANIC_V1,
+            Self::OrganicV2 => ColorsPalette::ORGANIC_V2,
+            Self::Dracula => ColorsPalette::DRACULA,
+            Self::Ocean => ColorsPalette::OCEAN,
+            Self::Matrix => ColorsPalette::MATRIX,
+            Self::Sunset => ColorsPalette::SUNSET,
+            Self::Nord => ColorsPalette::NORD,
+            Self::RetroCga => ColorsPalette::RETRO_CGA,
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct WindowPalette {
-    pub background: Color,
-    pub borders: Color,
-    pub score_text: Color,
-}
-
-impl WindowPalette {
-    pub fn new(background: Color, borders: Color, score_text: Color) -> Self {
-        Self {
-            background,
-            borders,
-            score_text,
-        }
-    }
-}
-
-impl From<PaletteColors> for WindowPalette {
-    fn from(value: PaletteColors) -> Self {
-        Self::new(value.background, value.borders, value.score_text)
-    }
-}
-
-#[derive(Debug)]
-pub struct SnakePalette {
-    pub body: Color,
-    pub head: Color,
-    pub body_inv: Color,
-    pub head_inv: Color,
-}
-
-impl SnakePalette {
-    pub fn new(head: Color, body: Color, head_inv: Color, body_inv: Color) -> Self {
-        Self {
-            head,
-            body,
-            head_inv,
-            body_inv,
-        }
-    }
-}
-
-impl From<PaletteColors> for SnakePalette {
-    fn from(value: PaletteColors) -> Self {
-        Self::new(
-            value.snake_head,
-            value.snake_body,
-            value.snake_head_inv,
-            value.snake_body_inv,
-        )
     }
 }

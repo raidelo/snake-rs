@@ -105,11 +105,11 @@ async fn show_start_screen(
 
 async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
     let style = PaletteStyle::OrganicV1;
-    let (window_palette, snake_palette, food_color) = style.palette().unpack();
+    let palette = style.palette();
 
     let (width, height) = crossterm::terminal::size()?;
 
-    let mut window = Window::new(width, height, window_palette);
+    let mut window = Window::new(width, height, palette.window);
 
     if let MenuChoice::Quit = show_start_screen(&mut rx, &window).await? {
         return Ok(());
@@ -120,11 +120,11 @@ async fn run_game(mut rx: Receiver<Event>) -> Result<(), GameError> {
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
         constants::INITIAL_SNAKE_LIVES,
-        snake_palette,
+        palette.snake,
     );
     let mut grow: bool;
 
-    let mut fruit = Fruit::random_generate(&window, food_color);
+    let mut fruit = Fruit::random_generate(&window, palette.food);
 
     let speed = 60;
     let frame_duration = Duration::from_millis(speed);
