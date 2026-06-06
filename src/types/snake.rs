@@ -19,6 +19,8 @@ use crate::{
     },
 };
 
+const SNAKE_PARTS_EMPTY: &str = "snake must have at least 1 part";
+
 #[derive(Debug)]
 pub enum ImpactError {
     BodyImpact,
@@ -139,22 +141,20 @@ impl Snake {
     }
 
     pub fn head(&self) -> &SnakePart {
-        self.parts
-            .first()
-            .expect("the snake must have at least 1 square of lenght")
+        self.parts.first().expect(SNAKE_PARTS_EMPTY)
     }
 
     pub fn head_mut(&mut self) -> &mut SnakePart {
-        self.parts
-            .first_mut()
-            .expect("the snake must have at least 1 square of lenght")
+        self.parts.first_mut().expect(SNAKE_PARTS_EMPTY)
     }
 
     pub fn score(&self) -> usize {
-        self.parts.len() - INITIAL_SNAKE_LENGTH as usize
+        self.parts
+            .len()
+            .saturating_sub(INITIAL_SNAKE_LENGTH as usize)
     }
 
-    pub fn is_invincible(&mut self) -> bool {
+    pub fn is_invincible(&self) -> bool {
         self.invincible_until
             .is_some_and(|until| until > Instant::now())
     }
