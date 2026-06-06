@@ -99,8 +99,7 @@ async fn run(
 
     let mut fruit = Fruit::random_generate(window, palette.food);
 
-    let speed = 60;
-    let frame_duration = Duration::from_millis(speed);
+    let frame_duration = Duration::from_millis(constants::FRAME_DURATION);
 
     let mut interval = interval(frame_duration);
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);

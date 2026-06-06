@@ -2,6 +2,7 @@ pub const INITIAL_SNAKE_LENGTH: u16 = 5;
 pub const INITIAL_SNAKE_LIVES: u8 = 3;
 pub const MAX_DISPLAYED_LIVES: u8 = 5;
 pub const INVINCIBILITY_MS: u16 = 2000;
+pub const FRAME_DURATION: u64 = 60;
 
 pub const CELL_GLYPH: char = ' ';
 pub const HEART_GLYPH: char = '\u{2764}';
