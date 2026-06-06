@@ -3,27 +3,28 @@ use std::io::{self, Write, stdout};
 use crossterm::{
     QueueableCommand,
     cursor::MoveTo,
-    style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
+    style::{Attribute, Color, Print, SetAttribute, SetForegroundColor},
 };
 
-use crate::constants::{MENU_ARROW, MENU_SEP};
+use crate::{
+    constants::{MENU_ARROW, MENU_SEP},
+    types::Window,
+};
 
-pub fn menu(window: &super::Window, options: &[(&str, &str)]) -> Result<(), io::Error> {
+pub fn menu(window: &Window, title: &str, options: &[(&str, &str)]) -> Result<(), io::Error> {
     let mut stdout = stdout();
 
     let palette = &window.palette;
     let cx = window.width / 2;
     let cy = window.height / 2;
 
-    let title = "S N A K E";
     let tlen = title.len();
     stdout
         .queue(MoveTo(cx - tlen as u16 / 2, cy - 3))?
         .queue(SetForegroundColor(palette.score_text))?
         .queue(SetAttribute(Attribute::Bold))?
         .queue(Print(title))?
-        .queue(SetAttribute(Attribute::Reset))?
-        .queue(SetBackgroundColor(palette.background))?;
+        .queue(SetAttribute(Attribute::NoBold))?;
 
     let separator = MENU_SEP.to_string().repeat(tlen);
     stdout

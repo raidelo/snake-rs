@@ -13,6 +13,7 @@ pub async fn start_screen(
 
     menu(
         window,
+        "S N A K E",
         &[
             (
                 constants::MENU_ENTER_CHOICE,
