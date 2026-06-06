@@ -18,36 +18,50 @@ pub fn menu(window: &Window, title: &str, options: &[(&str, &str)]) -> Result<()
     let cx = window.width / 2;
     let cy = window.height / 2;
 
-    let tlen = title.len();
+    let tlen = title.chars().count();
+    let title_x = cx.saturating_sub(tlen as u16 / 2);
+
     stdout
         .queue(SetBackgroundColor(palette.background))?
-        .queue(MoveTo(cx - tlen as u16 / 2, cy - 3))?
         .queue(SetForegroundColor(palette.score_text))?
+        .queue(MoveTo(title_x, cy - 3))?
         .queue(SetAttribute(Attribute::Bold))?
         .queue(Print(title))?
         .queue(SetAttribute(Attribute::NoBold))?;
 
     let separator = MENU_SEP.to_string().repeat(tlen);
     stdout
-        .queue(MoveTo(cx - tlen as u16 / 2, cy - 2))?
-        .queue(SetForegroundColor(palette.score_text))?
+        .queue(MoveTo(title_x, cy - 2))?
         .queue(Print(separator))?;
 
-    let keys_max = options
+    let keys_max_len = options
         .iter()
         .map(|(k, _)| k.chars().count())
         .max()
         .unwrap_or(0);
 
-    for (i, (key, value)) in options.iter().enumerate() {
-        let line = format!("{:^keys_max$}  {MENU_ARROW}  {:<}", key, value);
+    let rows: Vec<String> = options
+        .iter()
+        .map(|(key, value)| format!("{:^keys_max_len$}  {MENU_ARROW}  {}", key, value))
+        .collect();
+
+    let rows_max_len = rows
+        .iter()
+        .map(|row| row.chars().count())
+        .max()
+        .unwrap_or(0);
+
+    let rows_x = cx.saturating_sub((rows_max_len / 2) as u16);
+
+    for (i, row) in rows.iter().enumerate() {
         stdout
-            .queue(MoveTo(cx - (keys_max + 2) as u16, cy + i as u16))?
-            .queue(SetForegroundColor(palette.score_text))?
-            .queue(Print(&line))?;
+            .queue(MoveTo(rows_x, cy + i as u16))?
+            .queue(Print(row))?;
     }
 
-    stdout.queue(SetForegroundColor(Color::Reset))?;
+    stdout
+        .queue(SetForegroundColor(Color::Reset))?
+        .queue(SetBackgroundColor(Color::Reset))?;
 
     stdout.flush()
 }
