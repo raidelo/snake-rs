@@ -32,7 +32,7 @@ impl SnakePart {
     }
 
     pub fn change_direction(&mut self, direction: Direction) -> bool {
-        if direction != self.direction.counter_part() {
+        if direction != self.direction.opposite() {
             self.direction = direction;
             true
         } else {
