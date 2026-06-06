@@ -49,8 +49,3 @@ pub fn menu(window: &super::Window, options: &[(&str, &str)]) -> Result<(), io::
 
     stdout.flush()
 }
-
-pub enum MenuChoice {
-    Start,
-    Quit,
-}

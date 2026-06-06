@@ -1,6 +1,7 @@
 mod constants;
 mod helpers;
 mod menu;
+mod screens;
 mod types;
 
 use std::io::{self, Write, stdout};
@@ -11,7 +12,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::{Duration, interval};
 
 use crate::helpers::{reset_terminal, setup_terminal};
-use crate::menu::{MenuChoice, menu};
+use crate::screens::{MenuChoice, start_screen};
 use crate::types::{
     Axes, Direction, Fruit, Palette, Snake, Theme, Window, round_down_to_even, will_eat_fruit,
 };
@@ -57,39 +58,6 @@ async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
     Ok(())
 }
 
-async fn show_start_screen(
-    rx: &mut Receiver<Event>,
-    window: &Window,
-) -> Result<MenuChoice, AppError> {
-    window.set_background_color()?;
-
-    menu(
-        window,
-        &[
-            (
-                constants::MENU_ENTER_CHOICE,
-                constants::MENU_ENTER_CHOICE_VALUE,
-            ),
-            (
-                constants::MENU_QUIT_CHOICE,
-                constants::MENU_QUIT_CHOICE_VALUE,
-            ),
-        ],
-    )?;
-
-    loop {
-        match rx.recv().await {
-            Some(Event::Key(event)) => match event.code {
-                KeyCode::Enter => break Ok(MenuChoice::Start),
-                KeyCode::Char('q') | KeyCode::Char('Q') => break Ok(MenuChoice::Quit),
-                _ => continue,
-            },
-            Some(_) => continue,
-            None => break Err(AppError::KeyboardListenerDisconnection),
-        }
-    }
-}
-
 async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
     let style = Theme::OrganicV1;
     let palette = style.palette();
@@ -98,7 +66,7 @@ async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
 
     let mut window = Window::new(width, height, palette.window);
 
-    if let MenuChoice::Quit = show_start_screen(&mut rx, &window).await? {
+    if let MenuChoice::Quit = start_screen(&mut rx, &window).await? {
         return Ok(GameResult::Quit);
     };
 
