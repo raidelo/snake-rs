@@ -8,9 +8,7 @@ use crate::{AppError, constants};
 pub async fn start_screen(
     rx: &mut Receiver<Event>,
     window: &Window,
-) -> Result<MenuChoice, AppError> {
-    window.set_background_color()?;
-
+) -> Result<StartChoice, AppError> {
     menu(
         window,
         "S N A K E",
@@ -23,8 +21,10 @@ pub async fn start_screen(
     loop {
         match rx.recv().await {
             Some(Event::Key(event)) => match event.code {
-                KeyCode::Enter => break Ok(MenuChoice::Start),
-                KeyCode::Char('q') | KeyCode::Char('Q') => break Ok(MenuChoice::Quit),
+                KeyCode::Enter => break Ok(StartChoice::Start),
+                KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                    break Ok(StartChoice::Quit);
+                }
                 _ => continue,
             },
             Some(_) => continue,
@@ -33,7 +33,7 @@ pub async fn start_screen(
     }
 }
 
-pub enum MenuChoice {
+pub enum StartChoice {
     Start,
     Quit,
 }

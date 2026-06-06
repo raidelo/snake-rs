@@ -13,7 +13,7 @@ use tokio::time::{Duration, interval};
 
 use crate::helpers::{reset_terminal, setup_terminal};
 use crate::screens::{
-    GameOverChoice, MenuChoice, PauseChoice, game_over_screen, pause_screen, start_screen,
+    GameOverChoice, PauseChoice, StartChoice, game_over_screen, pause_screen, start_screen,
 };
 use crate::types::{
     Axes, Direction, Fruit, Palette, Snake, Theme, Window, round_down_to_even, will_eat_fruit,
@@ -68,14 +68,16 @@ async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
 
     let mut window = Window::new(width, height, palette.window);
 
-    if let MenuChoice::Quit = start_screen(&mut rx, &window).await? {
+    window.set_background_color()?;
+
+    if let StartChoice::Quit = start_screen(&mut rx, &window).await? {
         return Ok(GameResult::Quit);
     };
 
     loop {
         match run(&mut rx, &mut window, palette).await? {
             GameResult::Impact => match game_over_screen(&mut rx, &window).await? {
-                GameOverChoice::Start => continue,
+                GameOverChoice::PlayAgain => continue,
 
                 GameOverChoice::Quit => return Ok(GameResult::Quit),
             },
@@ -115,21 +117,19 @@ async fn run(
             Ok(event) => match event {
                 Event::Key(key_event) => {
                     match key_event.code {
-                        KeyCode::Up | KeyCode::Char('w') => {
+                        KeyCode::Up | KeyCode::Char('w') | KeyCode::Char('W') => {
                             snake.change_direction(Direction::Up);
                         }
-                        KeyCode::Down | KeyCode::Char('s') => {
+                        KeyCode::Down | KeyCode::Char('s') | KeyCode::Char('S') => {
                             snake.change_direction(Direction::Down);
                         }
-                        KeyCode::Left | KeyCode::Char('a') => {
+                        KeyCode::Left | KeyCode::Char('a') | KeyCode::Char('A') => {
                             snake.change_direction(Direction::Left);
                         }
-                        KeyCode::Right | KeyCode::Char('d') => {
+                        KeyCode::Right | KeyCode::Char('d') | KeyCode::Char('D') => {
                             snake.change_direction(Direction::Right);
                         }
-                        KeyCode::Esc | KeyCode::Char('q') => break Ok(GameResult::Quit),
-
-                        KeyCode::Char('p') | KeyCode::Char('P') => {
+                        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
                             match pause_screen(rx, window).await? {
                                 PauseChoice::Continue => (),
 

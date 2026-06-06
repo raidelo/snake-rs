@@ -13,7 +13,7 @@ pub async fn pause_screen(
         window,
         "P A U S E",
         &[
-            (constants::KEY_CONTINUE, constants::LABEL_CONTINUE),
+            (constants::KEY_ENTER, constants::LABEL_CONTINUE),
             (constants::KEY_QUIT, constants::LABEL_QUIT),
         ],
     )?;
@@ -21,8 +21,10 @@ pub async fn pause_screen(
     loop {
         match rx.recv().await {
             Some(Event::Key(event)) => match event.code {
-                KeyCode::Char('p') | KeyCode::Char('P') => break Ok(PauseChoice::Continue),
-                KeyCode::Char('q') | KeyCode::Char('Q') => break Ok(PauseChoice::Quit),
+                KeyCode::Enter => break Ok(PauseChoice::Continue),
+                KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                    break Ok(PauseChoice::Quit);
+                }
                 _ => continue,
             },
             Some(_) => continue,

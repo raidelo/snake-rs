@@ -10,7 +10,6 @@ pub const SEP_GLYPH: char = '\u{2500}';
 pub const ARROW_GLYPH: char = '\u{2192}';
 
 pub const KEY_ENTER: &str = "Enter";
-pub const KEY_CONTINUE: &str = "P";
 pub const KEY_QUIT: &str = "Q";
 
 pub const LABEL_PLAY: &str = "Play";

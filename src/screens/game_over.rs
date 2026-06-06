@@ -21,8 +21,10 @@ pub async fn game_over_screen(
     loop {
         match rx.recv().await {
             Some(Event::Key(event)) => match event.code {
-                KeyCode::Enter => break Ok(GameOverChoice::Start),
-                KeyCode::Char('q') | KeyCode::Char('Q') => break Ok(GameOverChoice::Quit),
+                KeyCode::Enter => break Ok(GameOverChoice::PlayAgain),
+                KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                    break Ok(GameOverChoice::Quit);
+                }
                 _ => continue,
             },
             Some(_) => continue,
@@ -32,6 +34,6 @@ pub async fn game_over_screen(
 }
 
 pub enum GameOverChoice {
-    Start,
+    PlayAgain,
     Quit,
 }
