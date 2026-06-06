@@ -31,29 +31,21 @@ pub fn menu(window: &super::Window, options: &[(&str, &str)]) -> Result<(), io::
         .queue(SetForegroundColor(palette.score_text))?
         .queue(Print(separator))?;
 
-    let (mut key_max, _) = (0, 0);
+    let keys_max = options
+        .iter()
+        .map(|(k, _)| k.chars().count())
+        .max()
+        .unwrap_or(0);
 
-    for (key, _) in options.iter() {
-        let key_len = key.chars().count();
-        if key_len > key_max {
-            key_max = key_len;
-        }
-    }
-
-    let mut first_line_align: u16 = 0;
-
-    for (i, (key, label)) in options.iter().enumerate() {
-        let line = format!("{:^key_max$}  {MENU_ARROW}  {:<}", key, label);
-        if i == 0 {
-            first_line_align = line.chars().count() as u16 / 2;
-        }
+    for (i, (key, value)) in options.iter().enumerate() {
+        let line = format!("{:^keys_max$}  {MENU_ARROW}  {:<}", key, value);
         stdout
-            .queue(MoveTo(cx - first_line_align, cy + i as u16))?
+            .queue(MoveTo(cx - (keys_max + 2) as u16, cy + i as u16))?
             .queue(SetForegroundColor(palette.score_text))?
             .queue(Print(&line))?;
     }
 
-    stdout.queue(SetForegroundColor(Color::Reset))?.flush()?;
+    stdout.queue(SetForegroundColor(Color::Reset))?;
 
     stdout.flush()
 }
