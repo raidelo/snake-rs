@@ -1,16 +1,21 @@
-use crate::{
-    helpers::make_even_by_substracting,
-    types::{Axes, Direction, Fruit, ImpactError, Snake, Window, square::Square},
-};
+use crate::types::{Axes, Direction, Fruit, ImpactError, Snake, Window, square::Square};
+
+pub fn round_down_to_even(number: u16) -> u16 {
+    if number.is_multiple_of(2) {
+        number
+    } else {
+        number - 1
+    }
+}
 
 pub fn random_pos_on_background(window: &Window) -> Axes {
     Axes::new(
-        make_even_by_substracting(rand::random_range(window.bg_start.x..window.bg_end.x)),
+        round_down_to_even(rand::random_range(window.bg_start.x..window.bg_end.x)),
         rand::random_range(window.bg_start.y..window.bg_end.y),
     )
 }
 
-pub fn is_going_to_impact(snake: &Snake, window: &Window) -> Option<ImpactError> {
+pub fn check_impact(snake: &Snake, window: &Window) -> Option<ImpactError> {
     if check_border_impact(snake, window) {
         return Some(ImpactError::BorderImpact);
     }
@@ -39,11 +44,11 @@ pub fn check_border_impact(snake: &Snake, window: &Window) -> bool {
 
 pub fn check_body_impact(snake: &Snake) -> bool {
     let head = snake.head();
-    let head_next_pos: Axes = get_next_position(&head.square, &head.direction);
+    let head_next_pos: Axes = next_position(&head.square, &head.direction);
 
     let mut part_next_pos: Axes;
     for part in snake.parts.iter().skip(1) {
-        part_next_pos = get_next_position(&part.square, &part.direction);
+        part_next_pos = next_position(&part.square, &part.direction);
 
         if head_next_pos == part_next_pos {
             return true;
@@ -53,7 +58,7 @@ pub fn check_body_impact(snake: &Snake) -> bool {
     false
 }
 
-pub fn get_next_position(square: &Square, direction: &Direction) -> Axes {
+pub fn next_position(square: &Square, direction: &Direction) -> Axes {
     let mut pos = square.position;
     match direction {
         Direction::Up => pos.y -= 1,
@@ -64,8 +69,8 @@ pub fn get_next_position(square: &Square, direction: &Direction) -> Axes {
     pos
 }
 
-pub fn is_going_to_eat_fruit(snake: &Snake, fruit: &Fruit) -> bool {
+pub fn will_eat_fruit(snake: &Snake, fruit: &Fruit) -> bool {
     let head = snake.head();
 
-    get_next_position(&head.square, &head.direction) == fruit.position()
+    next_position(&head.square, &head.direction) == fruit.position()
 }

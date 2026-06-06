@@ -10,10 +10,11 @@ use futures::StreamExt;
 use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::{Duration, interval};
 
-use crate::helpers::{make_even_by_substracting, reset_terminal, setup_terminal};
+use crate::helpers::{reset_terminal, setup_terminal};
 use crate::menu::{MenuChoice, menu};
 use crate::types::{
-    Axes, Direction, Fruit, ImpactError, Palette, Snake, Theme, Window, is_going_to_eat_fruit,
+    Axes, Direction, Fruit, ImpactError, Palette, Snake, Theme, Window, round_down_to_even,
+    will_eat_fruit,
 };
 
 #[tokio::main]
@@ -111,10 +112,7 @@ async fn run(
     palette: Palette,
 ) -> Result<GameResult, AppError> {
     let mut snake = Snake::new(
-        Axes::new(
-            make_even_by_substracting(window.width / 4),
-            window.height / 2,
-        ),
+        Axes::new(round_down_to_even(window.width / 4), window.height / 2),
         Direction::Right,
         constants::INITIAL_SNAKE_LENGTH,
         constants::INITIAL_SNAKE_LIVES,
@@ -173,7 +171,7 @@ async fn run(
 
         let invincible = snake.is_invincible();
 
-        grow = if is_going_to_eat_fruit(&snake, &fruit) && !invincible {
+        grow = if will_eat_fruit(&snake, &fruit) && !invincible {
             fruit.regenerate(window);
             true
         } else {

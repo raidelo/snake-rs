@@ -11,7 +11,7 @@ use crate::{
     types::{
         axes::Axes,
         direction::Direction,
-        helpers::{get_next_position, is_going_to_impact},
+        helpers::{check_impact, next_position},
         palette::SnakePalette,
         render::Render,
         snake_part::SnakePart,
@@ -87,7 +87,7 @@ impl Snake {
     pub fn update(&mut self, window: &Window, grow: bool) -> Result<(), ImpactError> {
         self.unset_invincibility_if_expired();
 
-        if let Some(impact) = is_going_to_impact(self, window)
+        if let Some(impact) = check_impact(self, window)
             && !self.is_invincible()
         {
             if self.lives == 1 {
@@ -107,7 +107,7 @@ impl Snake {
 
             head.square.color = color;
 
-            new_head.square.position = get_next_position(&new_head.square, &new_head.direction);
+            new_head.square.position = next_position(&new_head.square, &new_head.direction);
 
             self.parts.insert(0, new_head);
 

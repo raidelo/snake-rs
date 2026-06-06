@@ -17,11 +17,3 @@ pub fn reset_terminal() -> Result<(), io::Error> {
         .queue(crossterm::terminal::LeaveAlternateScreen)?
         .flush()
 }
-
-pub fn make_even_by_substracting(number: u16) -> u16 {
-    if number.is_multiple_of(2) {
-        number
-    } else {
-        number - 1
-    }
-}
