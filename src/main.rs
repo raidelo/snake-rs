@@ -25,66 +25,50 @@ async fn main() -> AppExit {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {
         let _ = reset_terminal();
-
-        default_hook(panic_info)
+        default_hook(panic_info);
     }));
 
-    match init().await {
+    match run_app().await {
         Ok(()) => AppExit::Ok,
         Err(AppError::KeyboardListenerDisconnection) => AppExit::Ok,
-        Err(AppError::IOError(e)) => AppExit::IoError(e),
+        Err(AppError::IOError(e)) => AppExit::IOError(e),
     }
 }
 
-async fn init() -> Result<(), AppError> {
-    let (tx, rx) = channel::<Event>(100);
-
+async fn run_app() -> Result<(), AppError> {
     setup_terminal()?;
 
+    let (tx, rx) = channel::<Event>(100);
     let listener_handler = tokio::task::spawn(keyboard_listener(tx));
 
-    let result = run_app(rx).await;
-    listener_handler.abort();
+    let result = game_loop(rx).await;
 
+    listener_handler.abort();
     reset_terminal()?;
 
-    result.map(|_| ())
+    result
 }
 
-async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
-    let mut reader = EventStream::new();
-
-    while let Some(event) = reader.next().await {
-        if tx.send(event?).await.is_err() {
-            break;
-        };
-    }
-    Ok(())
-}
-
-async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
+async fn game_loop(mut rx: Receiver<Event>) -> Result<(), AppError> {
     let style = Theme::OrganicV1;
     let palette = style.palette();
 
     let (width, height) = crossterm::terminal::size()?;
-
     let mut window = Window::new(width, height, palette.window);
 
     window.set_background_color()?;
 
     if let StartChoice::Quit = start_screen(&mut rx, &window).await? {
-        return Ok(GameResult::Quit);
-    };
+        return Ok(());
+    }
 
     loop {
         match run(&mut rx, &mut window, palette).await? {
             GameResult::Impact => match game_over_screen(&mut rx, &window).await? {
                 GameOverChoice::PlayAgain => continue,
-
-                GameOverChoice::Quit => return Ok(GameResult::Quit),
+                GameOverChoice::Quit => return Ok(()),
             },
-
-            GameResult::Quit => return Ok(GameResult::Quit),
+            GameResult::Quit => return Ok(()),
         }
     }
 }
@@ -106,7 +90,6 @@ async fn run(
     let mut fruit = Fruit::random_generate(window, palette.food);
 
     let frame_duration = Duration::from_millis(constants::FRAME_DURATION);
-
     let mut interval = interval(frame_duration);
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
 
@@ -117,31 +100,29 @@ async fn run(
 
         match rx.try_recv() {
             Ok(event) => match event {
-                Event::Key(key_event) => {
-                    match key_event.code {
-                        KeyCode::Up | KeyCode::Char('w') | KeyCode::Char('W') => {
-                            snake.change_direction(Direction::Up);
-                        }
-                        KeyCode::Down | KeyCode::Char('s') | KeyCode::Char('S') => {
-                            snake.change_direction(Direction::Down);
-                        }
-                        KeyCode::Left | KeyCode::Char('a') | KeyCode::Char('A') => {
-                            snake.change_direction(Direction::Left);
-                        }
-                        KeyCode::Right | KeyCode::Char('d') | KeyCode::Char('D') => {
-                            snake.change_direction(Direction::Right);
-                        }
-                        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
-                            match pause_screen(rx, window).await? {
-                                PauseChoice::Continue => (),
-
-                                PauseChoice::Quit => break Ok(GameResult::Quit),
+                Event::Key(key_event) => match key_event.code {
+                    KeyCode::Up | KeyCode::Char('w') | KeyCode::Char('W') => {
+                        snake.change_direction(Direction::Up);
+                    }
+                    KeyCode::Down | KeyCode::Char('s') | KeyCode::Char('S') => {
+                        snake.change_direction(Direction::Down);
+                    }
+                    KeyCode::Left | KeyCode::Char('a') | KeyCode::Char('A') => {
+                        snake.change_direction(Direction::Left);
+                    }
+                    KeyCode::Right | KeyCode::Char('d') | KeyCode::Char('D') => {
+                        snake.change_direction(Direction::Right);
+                    }
+                    KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                        match pause_screen(rx, window).await? {
+                            PauseChoice::Continue => {
+                                interval.reset();
                             }
+                            PauseChoice::Quit => break Ok(GameResult::Quit),
                         }
-
-                        _ => (),
-                    };
-                }
+                    }
+                    _ => (),
+                },
 
                 Event::Resize(width, height) => window.resize(width, height),
 
@@ -152,7 +133,7 @@ async fn run(
             Err(TryRecvError::Disconnected) => {
                 break Err(AppError::KeyboardListenerDisconnection);
             }
-        };
+        }
 
         window.set_background_color()?;
         window.draw_borders(snake.score(), snake.lives)?;
@@ -168,18 +149,29 @@ async fn run(
 
         if let Err(_impact) = snake.update(window, grow) {
             break Ok(GameResult::Impact);
-        };
+        }
 
         if snake.is_invincible() {
             snake.blink();
         }
 
         window.render(&snake)?;
-
         window.render(&fruit)?;
 
         stdout.flush()?;
     }
+}
+
+async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
+    let mut reader = EventStream::new();
+
+    while let Some(event) = reader.next().await {
+        if tx.send(event?).await.is_err() {
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 enum GameResult {
@@ -200,14 +192,14 @@ impl From<io::Error> for AppError {
 
 enum AppExit {
     Ok,
-    IoError(io::Error),
+    IOError(io::Error),
 }
 
 impl Termination for AppExit {
     fn report(self) -> ExitCode {
         match self {
             AppExit::Ok => ExitCode::SUCCESS,
-            AppExit::IoError(e) => {
+            AppExit::IOError(e) => {
                 eprintln!("Error: {e}");
                 ExitCode::FAILURE
             }
