@@ -12,7 +12,9 @@ use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::{Duration, interval};
 
 use crate::helpers::{reset_terminal, setup_terminal};
-use crate::screens::{GameOverChoice, MenuChoice, game_over_screen, start_screen};
+use crate::screens::{
+    GameOverChoice, MenuChoice, PauseChoice, game_over_screen, pause_screen, start_screen,
+};
 use crate::types::{
     Axes, Direction, Fruit, Palette, Snake, Theme, Window, round_down_to_even, will_eat_fruit,
 };
@@ -126,6 +128,14 @@ async fn run(
                             snake.change_direction(Direction::Right);
                         }
                         KeyCode::Esc | KeyCode::Char('q') => break Ok(GameResult::Quit),
+
+                        KeyCode::Char('p') | KeyCode::Char('P') => {
+                            match pause_screen(rx, window).await? {
+                                PauseChoice::Continue => (),
+
+                                PauseChoice::Quit => break Ok(GameResult::Quit),
+                            }
+                        }
 
                         _ => (),
                     };
