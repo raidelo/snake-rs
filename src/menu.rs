@@ -7,7 +7,7 @@ use crossterm::{
 };
 
 use crate::{
-    constants::{MENU_ARROW, MENU_SEP},
+    constants::{ARROW_GLYPH, SEP_GLYPH},
     types::Window,
 };
 
@@ -29,7 +29,7 @@ pub fn menu(window: &Window, title: &str, options: &[(&str, &str)]) -> Result<()
         .queue(Print(title))?
         .queue(SetAttribute(Attribute::NoBold))?;
 
-    let separator = MENU_SEP.to_string().repeat(tlen);
+    let separator = SEP_GLYPH.to_string().repeat(tlen);
     stdout
         .queue(MoveTo(title_x, cy - 2))?
         .queue(Print(separator))?;
@@ -42,7 +42,7 @@ pub fn menu(window: &Window, title: &str, options: &[(&str, &str)]) -> Result<()
 
     let rows: Vec<String> = options
         .iter()
-        .map(|(key, value)| format!("{:^keys_max_len$}  {MENU_ARROW}  {}", key, value))
+        .map(|(key, value)| format!("{:^keys_max_len$}  {ARROW_GLYPH}  {}", key, value))
         .collect();
 
     let rows_max_len = rows

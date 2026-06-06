@@ -1,7 +1,7 @@
 use std::io;
 
 use crate::{
-    constants::SQUARE_GLYPH,
+    constants::CELL_GLYPH,
     types::{
         axes::Axes, helpers::random_pos_on_background, palette::FoodPalette, render::Render,
         square::Square, window::Window,
@@ -16,7 +16,7 @@ pub struct Fruit {
 impl Fruit {
     pub fn new(position: Axes, palette: FoodPalette) -> Self {
         Self {
-            square: Square::new(position, palette.food, SQUARE_GLYPH),
+            square: Square::new(position, palette.food, CELL_GLYPH),
         }
     }
 

@@ -3,7 +3,7 @@ use std::io;
 use crossterm::style::Color;
 
 use crate::{
-    constants::SQUARE_GLYPH,
+    constants::CELL_GLYPH,
     types::{
         axes::Axes, direction::Direction, helpers::next_position, render::Render, square::Square,
         window::Window,
@@ -20,7 +20,7 @@ impl SnakePart {
     pub fn new(position: Axes, direction: Direction, color: Color) -> Self {
         Self {
             direction,
-            square: Square::new(position, color, SQUARE_GLYPH),
+            square: Square::new(position, color, CELL_GLYPH),
         }
     }
 

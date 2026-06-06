@@ -7,7 +7,7 @@ use crossterm::style::Color;
 
 use crate::{
     constants::INITIAL_SNAKE_LENGTH,
-    constants::INVINCIBLE_TIME,
+    constants::INVINCIBILITY_MS,
     types::{
         axes::Axes,
         direction::Direction,
@@ -98,7 +98,7 @@ impl Snake {
 
             self.lives -= 1;
             self.invincible_until =
-                Some(Instant::now() + Duration::from_millis(INVINCIBLE_TIME.into()));
+                Some(Instant::now() + Duration::from_millis(INVINCIBILITY_MS.into()));
         };
 
         if grow {

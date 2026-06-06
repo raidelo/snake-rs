@@ -13,11 +13,8 @@ pub async fn game_over_screen(
         window,
         "G A M E  O V E R",
         &[
-            (constants::MENU_ENTER_CHOICE, "Play Again"),
-            (
-                constants::MENU_QUIT_CHOICE,
-                constants::MENU_QUIT_CHOICE_VALUE,
-            ),
+            (constants::KEY_ENTER, constants::LABEL_PLAY_AGAIN),
+            (constants::KEY_QUIT, constants::LABEL_QUIT),
         ],
     )?;
 

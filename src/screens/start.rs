@@ -15,14 +15,8 @@ pub async fn start_screen(
         window,
         "S N A K E",
         &[
-            (
-                constants::MENU_ENTER_CHOICE,
-                constants::MENU_ENTER_CHOICE_VALUE,
-            ),
-            (
-                constants::MENU_QUIT_CHOICE,
-                constants::MENU_QUIT_CHOICE_VALUE,
-            ),
+            (constants::KEY_ENTER, constants::LABEL_PLAY),
+            (constants::KEY_QUIT, constants::LABEL_QUIT),
         ],
     )?;
 

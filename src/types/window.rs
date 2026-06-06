@@ -3,7 +3,7 @@ use std::io::{self, stdout};
 use crossterm::QueueableCommand;
 
 use crate::{
-    constants::{HEART_GLYPH, MAX_LIVES_IN_BORDER, SQUARE_GLYPH},
+    constants::{CELL_GLYPH, HEART_GLYPH, MAX_DISPLAYED_LIVES},
     types::{Axes, palette::WindowPalette, render::Render},
 };
 
@@ -63,21 +63,21 @@ impl Window {
 
         stdout.queue(crossterm::style::SetBackgroundColor(self.palette.borders))?;
 
-        let horizontal_down = String::from(SQUARE_GLYPH).repeat(self.width.into());
+        let horizontal_down = String::from(CELL_GLYPH).repeat(self.width.into());
         stdout
             .queue(crossterm::cursor::MoveTo(0, self.height - 1))?
             .queue(crossterm::style::Print(&horizontal_down))?;
 
-        let hearts = format!("{HEART_GLYPH} ").repeat(if lives <= MAX_LIVES_IN_BORDER {
+        let hearts = format!("{HEART_GLYPH} ").repeat(if lives <= MAX_DISPLAYED_LIVES {
             lives
         } else {
-            MAX_LIVES_IN_BORDER
+            MAX_DISPLAYED_LIVES
         } as usize);
 
         let score_text = format!(" Score: {:^5} | Lives: {}x {} ", score, hearts, lives);
         let score_len = score_text.chars().count() as u16;
         let side_len = (self.width - score_len) / 2;
-        let side = String::from(SQUARE_GLYPH).repeat(side_len.into());
+        let side = String::from(CELL_GLYPH).repeat(side_len.into());
 
         stdout
             .queue(crossterm::cursor::MoveTo(0, 0))?
@@ -102,7 +102,7 @@ impl Window {
             .queue(crossterm::style::Print(&side))?;
 
         if !(self.width - score_len).is_multiple_of(2) {
-            stdout.queue(crossterm::style::Print(&SQUARE_GLYPH))?;
+            stdout.queue(crossterm::style::Print(&CELL_GLYPH))?;
         }
 
         let square = "  ";
@@ -116,7 +116,7 @@ impl Window {
                 .queue(crossterm::style::Print(&square))?;
 
             if cond {
-                stdout.queue(crossterm::style::Print(&SQUARE_GLYPH))?;
+                stdout.queue(crossterm::style::Print(&CELL_GLYPH))?;
             }
         }
 
