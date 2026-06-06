@@ -13,8 +13,7 @@ use tokio::time::{Duration, interval};
 use crate::helpers::{reset_terminal, setup_terminal};
 use crate::menu::{MenuChoice, menu};
 use crate::types::{
-    Axes, Direction, Fruit, ImpactError, Palette, Snake, Theme, Window, round_down_to_even,
-    will_eat_fruit,
+    Axes, Direction, Fruit, Palette, Snake, Theme, Window, round_down_to_even, will_eat_fruit,
 };
 
 #[tokio::main]
@@ -38,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     reset_terminal()?;
 
     match result {
-        Ok(GameResult::Impact(_)) => {}
+        Ok(GameResult::Impact) => {}
         Ok(GameResult::Quit) => {}
         Err(AppError::KeyboardListenerDisconnection) => {}
         Err(AppError::IOError(e)) => return Err(Box::new(e) as Box<dyn std::error::Error>),
@@ -178,8 +177,8 @@ async fn run(
             false
         };
 
-        if let Err(impact) = snake.update(window, grow) {
-            break Ok(GameResult::Impact(impact));
+        if let Err(_impact) = snake.update(window, grow) {
+            break Ok(GameResult::Impact);
         };
 
         if snake.is_invincible() {
@@ -195,7 +194,7 @@ async fn run(
 }
 
 enum GameResult {
-    Impact(ImpactError),
+    Impact,
     Quit,
 }
 
