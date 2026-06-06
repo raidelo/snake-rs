@@ -14,6 +14,7 @@ pub async fn start_screen(
         "S N A K E",
         &[
             (constants::KEY_ENTER, constants::LABEL_PLAY),
+            (constants::KEY_PALETTE, constants::LABEL_PALETTE),
             (constants::KEY_QUIT, constants::LABEL_QUIT),
         ],
     )?;
@@ -22,6 +23,7 @@ pub async fn start_screen(
         match rx.recv().await {
             Some(Event::Key(event)) => match event.code {
                 KeyCode::Enter => break Ok(StartChoice::Start),
+                KeyCode::Char('p') | KeyCode::Char('P') => break Ok(StartChoice::Palette),
                 KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
                     break Ok(StartChoice::Quit);
                 }
@@ -35,5 +37,6 @@ pub async fn start_screen(
 
 pub enum StartChoice {
     Start,
+    Palette,
     Quit,
 }

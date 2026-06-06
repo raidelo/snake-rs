@@ -129,4 +129,8 @@ impl Window {
             && value.y >= self.bg_start.y
             && value.y < self.bg_end.y
     }
+
+    pub fn set_palette(&mut self, palette: WindowPalette) {
+        self.palette = palette;
+    }
 }

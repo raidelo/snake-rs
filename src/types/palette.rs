@@ -568,7 +568,6 @@ impl Palette {
     };
 }
 
-#[allow(unused)]
 #[derive(Debug, Clone, Copy)]
 pub enum Theme {
     Classic,

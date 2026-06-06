@@ -8,23 +8,33 @@ use tokio::time::{Duration, interval};
 use crate::constants;
 use crate::errors::AppError;
 use crate::screens::{
-    GameOverChoice, PauseChoice, StartChoice, game_over_screen, pause_screen, start_screen,
+    GameOverChoice, PauseChoice, StartChoice, game_over_screen, palette_screen, pause_screen,
+    start_screen,
 };
 use crate::types::{
     Axes, Direction, Fruit, Palette, Snake, Theme, Window, round_down_to_even, will_eat_fruit,
 };
 
+const DEFAULT_THEME: Theme = Theme::OrganicV1;
+
 pub async fn game_loop(mut rx: Receiver<Event>) -> Result<(), AppError> {
-    let style = Theme::OrganicV1;
-    let palette = style.palette();
+    let mut palette = DEFAULT_THEME.palette();
 
     let (width, height) = crossterm::terminal::size()?;
     let mut window = Window::new(width, height, palette.window);
 
-    window.set_background_color()?;
-
-    if let StartChoice::Quit = start_screen(&mut rx, &window).await? {
-        return Ok(());
+    loop {
+        window.set_background_color()?;
+        match start_screen(&mut rx, &window).await? {
+            StartChoice::Start => break,
+            StartChoice::Palette => {
+                if let Some(theme) = palette_screen(&mut rx, &window).await? {
+                    palette = theme.palette();
+                    window.set_palette(palette.window);
+                };
+            }
+            StartChoice::Quit => return Ok(()),
+        }
     }
 
     loop {
