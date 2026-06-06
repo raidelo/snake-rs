@@ -33,8 +33,11 @@ impl Window {
     pub fn resize(&mut self, width: u16, height: u16) {
         self.width = width;
         self.height = height;
-        self.bg_end.x = width - 2;
-        self.bg_end.y = height - 1;
+
+        self.bg_end = Axes::new(
+            width - { if width.is_multiple_of(2) { 2 } else { 3 } },
+            height - 1,
+        );
     }
 
     pub fn render<T: Render>(&self, renderable: &T) -> Result<(), io::Error> {
@@ -118,5 +121,12 @@ impl Window {
         }
 
         Ok(())
+    }
+
+    pub fn contains(&self, value: &Axes) -> bool {
+        value.x >= self.bg_start.x
+            && value.x <= self.bg_end.x - 2
+            && value.y >= self.bg_start.y
+            && value.y < self.bg_end.y
     }
 }

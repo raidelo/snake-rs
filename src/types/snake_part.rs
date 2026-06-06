@@ -4,7 +4,10 @@ use crossterm::style::Color;
 
 use crate::{
     constants::SQUARE_GLYPH,
-    types::{axes::Axes, direction::Direction, render::Render, square::Square, window::Window},
+    types::{
+        axes::Axes, direction::Direction, helpers::next_position, render::Render, square::Square,
+        window::Window,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -22,37 +25,15 @@ impl SnakePart {
     }
 
     pub fn update_position(&mut self, window: &Window) {
-        match self.direction {
-            Direction::Up => {
-                if self.square.position.y > window.bg_start.y {
-                    self.square.position.y -= 1;
-                }
-            }
-            Direction::Down => {
-                if self.square.position.y < window.bg_end.y - 1 {
-                    self.square.position.y += 1;
-                }
-            }
-            Direction::Left => {
-                if self.square.position.x > window.bg_start.x {
-                    self.square.position.x -= 2;
-                }
-            }
-            Direction::Right => {
-                if self.square.position.x < window.bg_end.x - 2 {
-                    self.square.position.x += 2;
-                }
-            }
+        let next_pos = next_position(&self.square, &self.direction);
+        if window.contains(&next_pos) {
+            self.square.position = next_pos;
         }
-    }
-
-    pub fn set_direction(&mut self, direction: Direction) {
-        self.direction = direction;
     }
 
     pub fn change_direction(&mut self, direction: Direction) -> bool {
         if direction != self.direction.counter_part() {
-            self.set_direction(direction);
+            self.direction = direction;
             true
         } else {
             false
