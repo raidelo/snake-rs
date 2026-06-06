@@ -28,7 +28,7 @@ pub async fn game_loop(mut rx: Receiver<Event>) -> Result<(), AppError> {
         match start_screen(&mut rx, &window).await? {
             StartChoice::Start => break,
             StartChoice::Palette => {
-                if let Some(theme) = palette_screen(&mut rx, &window).await? {
+                if let Some(theme) = palette_screen(&mut rx, &mut window).await? {
                     palette = theme.palette();
                     window.set_palette(palette.window);
                 };

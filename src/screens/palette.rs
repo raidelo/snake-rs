@@ -29,11 +29,13 @@ const ALL_THEMES: &[Theme] = &[
 
 pub async fn palette_screen(
     rx: &mut Receiver<Event>,
-    window: &Window,
+    window: &mut Window,
 ) -> Result<Option<Theme>, AppError> {
     let mut selected: usize = 0;
 
     loop {
+        window.set_palette(ALL_THEMES[selected].palette().window);
+
         draw_palette_screen(window, selected)?;
 
         match rx.recv().await {
