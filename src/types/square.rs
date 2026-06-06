@@ -8,7 +8,7 @@ use crate::types::{axes::Axes, render::Render, window::Window};
 pub struct Square {
     pub position: Axes,
     pub color: Color,
-    pub glyph: char,
+    pub glyph: String,
 }
 
 impl Square {
@@ -16,7 +16,7 @@ impl Square {
         Self {
             position,
             color,
-            glyph,
+            glyph: format!("{}{}", glyph, glyph),
         }
     }
 }
@@ -26,10 +26,7 @@ impl Render for Square {
         stdout()
             .queue(crossterm::style::SetBackgroundColor(self.color))?
             .queue(crossterm::cursor::MoveTo(self.position.x, self.position.y))?
-            .queue(crossterm::style::Print(format!(
-                "{}{}",
-                self.glyph, self.glyph
-            )))?;
+            .queue(crossterm::style::Print(&self.glyph))?;
         Ok(())
     }
 }
