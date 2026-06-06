@@ -51,7 +51,7 @@ pub async fn game_loop(mut rx: Receiver<Event>) -> Result<(), AppError> {
 pub async fn run(
     rx: &mut Receiver<Event>,
     window: &mut Window,
-    palette: Palette,
+    mut palette: Palette,
 ) -> Result<GameResult, AppError> {
     let mut snake = Snake::new(
         Axes::new(round_down_to_even(window.width / 4), window.height / 2),
@@ -92,6 +92,14 @@ pub async fn run(
                         match pause_screen(rx, window).await? {
                             PauseChoice::Continue => {
                                 interval.reset();
+                            }
+                            PauseChoice::Palette => {
+                                if let Some(theme) = palette_screen(rx, window).await? {
+                                    palette = theme.palette();
+                                    window.set_palette(palette.window);
+                                    snake.set_palette(palette.snake);
+                                    fruit.set_palette(palette.food);
+                                };
                             }
                             PauseChoice::Quit => break Ok(GameResult::Quit),
                         }

@@ -14,6 +14,7 @@ pub async fn pause_screen(
         "P A U S E",
         &[
             (constants::KEY_ENTER, constants::LABEL_CONTINUE),
+            (constants::KEY_PALETTE, constants::LABEL_PALETTE),
             (constants::KEY_QUIT, constants::LABEL_QUIT),
         ],
     )?;
@@ -22,6 +23,7 @@ pub async fn pause_screen(
         match rx.recv().await {
             Some(Event::Key(event)) => match event.code {
                 KeyCode::Enter => break Ok(PauseChoice::Continue),
+                KeyCode::Char('p') | KeyCode::Char('P') => break Ok(PauseChoice::Palette),
                 KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
                     break Ok(PauseChoice::Quit);
                 }
@@ -35,5 +37,6 @@ pub async fn pause_screen(
 
 pub enum PauseChoice {
     Continue,
+    Palette,
     Quit,
 }

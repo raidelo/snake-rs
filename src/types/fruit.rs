@@ -31,6 +31,10 @@ impl Fruit {
     pub fn position(&self) -> Axes {
         self.square.position
     }
+
+    pub fn set_palette(&mut self, palette: FoodPalette) {
+        self.square.color = palette.food;
+    }
 }
 
 impl Render for Fruit {

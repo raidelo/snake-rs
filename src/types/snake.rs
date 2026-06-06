@@ -191,6 +191,11 @@ impl Snake {
             part.square.color = body;
         }
     }
+
+    pub fn set_palette(&mut self, palette: SnakePalette) {
+        self.apply_colors(self.palette.head, self.palette.body);
+        self.palette = palette;
+    }
 }
 
 impl Render for Snake {
