@@ -5,6 +5,7 @@ mod screens;
 mod types;
 
 use std::io::{self, Write, stdout};
+use std::process::{ExitCode, Termination};
 
 use crossterm::event::{Event, EventStream, KeyCode};
 use futures::StreamExt;
@@ -20,7 +21,7 @@ use crate::types::{
 };
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> AppExit {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {
         let _ = reset_terminal();
@@ -28,6 +29,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         default_hook(panic_info)
     }));
 
+    match init().await {
+        Ok(()) => AppExit::Ok,
+        Err(AppError::KeyboardListenerDisconnection) => AppExit::Ok,
+        Err(AppError::IOError(e)) => AppExit::IoError(e),
+    }
+}
+
+async fn init() -> Result<(), AppError> {
     let (tx, rx) = channel::<Event>(100);
 
     setup_terminal()?;
@@ -39,14 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     reset_terminal()?;
 
-    match result {
-        Ok(GameResult::Impact) => {}
-        Ok(GameResult::Quit) => {}
-        Err(AppError::KeyboardListenerDisconnection) => {}
-        Err(AppError::IOError(e)) => return Err(Box::new(e) as Box<dyn std::error::Error>),
-    }
-
-    Ok(())
+    result.map(|_| ())
 }
 
 async fn keyboard_listener(tx: Sender<Event>) -> Result<(), io::Error> {
@@ -193,5 +195,22 @@ enum AppError {
 impl From<io::Error> for AppError {
     fn from(value: io::Error) -> Self {
         Self::IOError(value)
+    }
+}
+
+enum AppExit {
+    Ok,
+    IoError(io::Error),
+}
+
+impl Termination for AppExit {
+    fn report(self) -> ExitCode {
+        match self {
+            AppExit::Ok => ExitCode::SUCCESS,
+            AppExit::IoError(e) => {
+                eprintln!("Error: {e}");
+                ExitCode::FAILURE
+            }
+        }
     }
 }
