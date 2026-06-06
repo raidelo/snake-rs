@@ -3,7 +3,7 @@ use std::io::{self, Write, stdout};
 use crossterm::{
     QueueableCommand,
     cursor::MoveTo,
-    style::{Attribute, Color, Print, SetAttribute, SetForegroundColor},
+    style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
 };
 
 use crate::{
@@ -20,6 +20,7 @@ pub fn menu(window: &Window, title: &str, options: &[(&str, &str)]) -> Result<()
 
     let tlen = title.len();
     stdout
+        .queue(SetBackgroundColor(palette.background))?
         .queue(MoveTo(cx - tlen as u16 / 2, cy - 3))?
         .queue(SetForegroundColor(palette.score_text))?
         .queue(SetAttribute(Attribute::Bold))?

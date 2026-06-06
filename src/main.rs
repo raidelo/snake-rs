@@ -12,7 +12,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel, error::TryRecvError};
 use tokio::time::{Duration, interval};
 
 use crate::helpers::{reset_terminal, setup_terminal};
-use crate::screens::{MenuChoice, start_screen};
+use crate::screens::{GameOverChoice, MenuChoice, game_over_screen, start_screen};
 use crate::types::{
     Axes, Direction, Fruit, Palette, Snake, Theme, Window, round_down_to_even, will_eat_fruit,
 };
@@ -70,7 +70,17 @@ async fn run_app(mut rx: Receiver<Event>) -> Result<GameResult, AppError> {
         return Ok(GameResult::Quit);
     };
 
-    run(&mut rx, &mut window, palette).await
+    loop {
+        match run(&mut rx, &mut window, palette).await? {
+            GameResult::Impact => match game_over_screen(&mut rx, &window).await? {
+                GameOverChoice::Start => continue,
+
+                GameOverChoice::Quit => return Ok(GameResult::Quit),
+            },
+
+            GameResult::Quit => return Ok(GameResult::Quit),
+        }
+    }
 }
 
 async fn run(
