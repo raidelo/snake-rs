@@ -8,11 +8,49 @@ pub fn round_down_to_even(number: u16) -> u16 {
     }
 }
 
-pub fn random_pos_on_background(window: &Window) -> Axes {
-    Axes::new(
-        round_down_to_even(rand::random_range(window.bg_start.x..window.bg_end.x)),
-        rand::random_range(window.bg_start.y..window.bg_end.y),
-    )
+pub fn random_free_position(window: &Window, snake: &Snake) -> Axes {
+    let flattened_list: Vec<u16> = collect_free_indices(window, snake);
+
+    let matrix_abstract_pos = flattened_list
+        .get(rand::random_range(0..flattened_list.len()))
+        .unwrap();
+
+    let y = matrix_abstract_pos / window.width;
+    let x = round_down_to_even(matrix_abstract_pos % window.width);
+
+    Axes::new(x, y)
+}
+
+fn collect_free_indices(window: &Window, snake: &Snake) -> Vec<u16> {
+    let mut list = vec![];
+
+    let mut counter = 0;
+
+    for y in 0..window.height {
+        for x in 0..window.width {
+            if is_free_position(window, snake, x, y) {
+                list.push(counter);
+            }
+            counter += 1;
+        }
+    }
+
+    list
+}
+
+fn is_free_position(window: &Window, snake: &Snake, x: u16, y: u16) -> bool {
+    let pos = Axes::new(x, y);
+
+    window.contains(&pos) && !is_occupied_by_snake(snake, &pos)
+}
+
+fn is_occupied_by_snake(snake: &Snake, position: &Axes) -> bool {
+    for part in snake.parts.iter() {
+        if position == &part.square.position {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn check_impact(snake: &Snake, window: &Window) -> Option<ImpactError> {

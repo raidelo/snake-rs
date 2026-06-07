@@ -3,7 +3,7 @@ use std::io;
 use crate::{
     constants::CELL_GLYPH,
     types::{
-        axes::Axes, helpers::random_pos_on_background, palette::FoodPalette, render::Render,
+        Snake, axes::Axes, helpers::random_free_position, palette::FoodPalette, render::Render,
         square::Square, window::Window,
     },
 };
@@ -20,12 +20,12 @@ impl Fruit {
         }
     }
 
-    pub fn random_generate(window: &Window, palette: FoodPalette) -> Self {
-        Self::new(random_pos_on_background(window), palette)
+    pub fn random_generate(window: &Window, snake: &Snake, palette: FoodPalette) -> Self {
+        Self::new(random_free_position(window, snake), palette)
     }
 
-    pub fn regenerate(&mut self, window: &Window) {
-        self.square.position = random_pos_on_background(window);
+    pub fn regenerate(&mut self, window: &Window, snake: &Snake) {
+        self.square.position = random_free_position(window, snake);
     }
 
     pub fn position(&self) -> Axes {

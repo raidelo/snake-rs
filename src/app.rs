@@ -62,7 +62,7 @@ pub async fn run(
     );
     let mut grow: bool;
 
-    let mut fruit = Fruit::random_generate(window, palette.food);
+    let mut fruit = Fruit::random_generate(window, &snake, palette.food);
 
     let frame_duration = Duration::from_millis(constants::FRAME_DURATION);
     let mut interval = interval(frame_duration);
@@ -124,7 +124,7 @@ pub async fn run(
         let invincible = snake.is_invincible();
 
         grow = if will_eat_fruit(&snake, &fruit) && !invincible {
-            fruit.regenerate(window);
+            fruit.regenerate(window, &snake);
             true
         } else {
             false
