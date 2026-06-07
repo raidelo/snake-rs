@@ -193,7 +193,7 @@ impl Snake {
     }
 
     pub fn set_palette(&mut self, palette: SnakePalette) {
-        self.apply_colors(self.palette.head, self.palette.body);
+        self.apply_colors(palette.head, palette.body);
         self.palette = palette;
     }
 }
